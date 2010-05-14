@@ -63,7 +63,7 @@ public class OWLlinkReasonerConfiguration extends SimpleConfiguration {
     }
 
      public OWLlinkReasonerConfiguration(URL reasonerURL) {
-        this(defaultURL, IndividualNodeSetPolicy.BY_SAME_AS);
+        this(reasonerURL, IndividualNodeSetPolicy.BY_SAME_AS);
     }
 
     public OWLlinkReasonerConfiguration() {
