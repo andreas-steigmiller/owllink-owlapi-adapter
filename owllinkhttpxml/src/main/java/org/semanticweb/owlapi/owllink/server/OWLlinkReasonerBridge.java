@@ -294,7 +294,7 @@ public class OWLlinkReasonerBridge implements RequestVisitor {
             OWLReasoner reasoner = this.reasonersByKB.get(query.getKB());
             if (reasoner != null)
                 throw new OWLlinkErrorResponseException("KB " + query.getKB() + " already exists!");
-        } else
+        } else 
             kb = IRI.create("http://owllink.org#" + getClass().getName() + ".kb" + System.currentTimeMillis());
         OWLOntology ontology = null;
         try {
@@ -1419,6 +1419,7 @@ public class OWLlinkReasonerBridge implements RequestVisitor {
                 this.getOntologyManager(query.getKB()).addAxioms(this.getOntologyManager(query.getKB()).getOntology(query.getKB()), ontology.getAxioms());
             }
             reasoner.flush();
+            reasoner.prepareReasoner();
             this.response = new OKImpl();
         } catch (Exception e) {
             handle(e);

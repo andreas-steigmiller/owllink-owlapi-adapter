@@ -56,17 +56,20 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
     protected PrefixManagerProvider prov = new DefaultPrefixManagerProvider();
     private URL reasonerURL;
     Description description;
-    OWLOntologyManager manager;
     HTTPSessionImpl session;
 
     public OWLlinkHTTPXMLReasoner(OWLOntology rootOntology, OWLlinkReasonerConfiguration configuration, BufferingMode bufferingMode) {
         super(rootOntology, configuration, bufferingMode);
-        session = new HTTPSessionImpl(manager, configuration.getReasonerURL(), prov);
+        session = new HTTPSessionImpl(rootOntology.getOWLOntologyManager(), configuration.getReasonerURL(), prov);
         this.reasonerURL = configuration.getReasonerURL();
         createDefaultKB();
         this.description = getReasonerInfo();
-        this.manager = rootOntology.getOWLOntologyManager();
         flush();
+        Set<OWLAxiom> axioms = new HashSet<OWLAxiom>(getReasonerAxioms());
+        if (axioms.size() > 0) {
+            Tell tell = new Tell(defaultKnowledgeBase, axioms);
+            ResponseMessage message = performRequests(tell);
+        }
     }
 
     public String getReasonerName() {

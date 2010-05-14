@@ -43,10 +43,9 @@ public class BuiltinRequestRenderer implements OWLlinkXMLRequestRenderer, Reques
 
     public void answer(Classify query) {
         writer.writeStartElement(CLASSIFY.getURI());
-        writer.writeFullIRIAttribute(query.getKB());
+        writer.writeKBAttribute(query.getKB());
         writer.writeEndElement();
     }
-
 
     public void answer(CreateKB query) {
         writer.writeStartElement(BuiltinRequestVocabulary.CREATEKB.getURI());
