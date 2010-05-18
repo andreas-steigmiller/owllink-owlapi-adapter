@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2009, Ulm University
+  ~ Copyright (C) 2010, Ulm University
   ~
   ~ Modifications to the initial code base are copyright of their
   ~ respective authors, or their employers as appropriate.  Authorship
@@ -22,7 +22,6 @@
   -->
 
 <project name="owllink" default="distribution">
-
 
     <property name="version" value="1.0.0"/>
 
@@ -139,7 +138,7 @@
          class files, a jar file containing the source, a lib directory containing
          the dependencies for the distribution.  The zip file is names
          owllinkapi-${version}.zip -->
-    <target name="distribution" depends="clean, binjar, srcjar, javadoc">
+    <target name="distribution" depends="clean, binjar, srcjar, javadoc, protegeplugin">
         <mkdir dir="${distdir}"/>
         <copy todir="${distdir}/lib">
             <fileset dir="${libdir}"/>
@@ -162,6 +161,24 @@
         <zip destfile="${builddir}/owllinkapi-${version}.zip">
             <fileset dir="${distdir}"/>
         </zip>
+    </target>
+
+    <target name="protegeplugin" >
+
+        <property name="owllink-protege4.basedir" value="kacke"/>
+
+        <subant target="compile-plugin">
+            <fileset dir="../owllinkprotege/antbuild" includes="build.xml"/>
+        </subant>
+
+         <subant target="bundle-plugin">
+            <fileset dir="../owllinkprotege/antbuild" includes="build.xml"/>
+        </subant>
+
+        <copy todir="${distdir}">
+            <fileset file="../owllinkprotege/antbuild/org.semanticweb.owllink.protege.jar"/>
+        </copy>
+
     </target>
 
     <target name="serverscripts">
@@ -196,8 +213,6 @@
 
         <chmod file="${hermit.owlapiv3.server.dir}/start-hermit.bat" perm="o+rx"/>
         <chmod file="${hermit.owlapiv3.server.dir}/start-hermit.sh" perm="o+rx"/>
-
-
     </target>
 
 

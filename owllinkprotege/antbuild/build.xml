@@ -21,27 +21,33 @@
   ~ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   -->
 
-<project name="owllink-protege4">
+<project name="owllink-protege4" >
 
-    <property name="version" value="1.0.0"/>
+    <property name="version" value="0.5.0"/>
+
+     <dirname property="owllink-protege4.ant.file" file="${ant.file}"/>
+
+    <property name="owllink-protege4.basedir" value="${owllink-protege4.ant.file}/../"/>
+
+
 
     <!-- The directory that contains the jar file dependencies for
          the class path and building a release -->
-    <property name="libdir" value="../../antbuild/build/"/>
+    <property name="owllink-protege4.libdir" value="${owllink-protege4.basedir}/../antbuild/build/"/>
 
     <!-- The directory where intermediate build products will be placed -->
-    <property name="builddir" value="build"/>
+    <property name="owllink-protege4.builddir" value="${owllink-protege4.ant.file}/build"/>
 
     <!-- A directory into which class files will be placed during the build answer-->
-    <property name="classesdir" value="${builddir}/classes"/>
+    <property name="owllink-protege4.classesdir" value="${owllink-protege4.builddir}/classes"/>
 
     <!-- The name of the jar file which contains the class files-->
-    <property name="bin-name" value="org.semanticweb.owllink.protege.jar"/>
+    <property name="bundle-name" value="org.semanticweb.owllink.protege.jar"/>
 
 
-    <property name="sourcepath" value="src/main/java/**/*.java"/>
+    <property name="owllink-protege4.sourcepath" value="${owllink-protege4.ant.file}/../src/main/java/"/>
 
-    <property name="distdir" value="${builddir}/dist"/>
+    <property name="owllink-protege4.distdir" value="${owllink-protege4.builddir}/dist"/>
 
 
     <!--
@@ -78,8 +84,8 @@
 
     <!-- For the classpath, we just use all of the libraries in the
   lib directory -->
-    <path id="classpath">
-        <filelist dir="${libdir}">
+    <path id="owllink-protege4.classpath">
+        <filelist dir="${owllink-protege4.libdir}">
             <file name="owllink-bin.jar"/>
         </filelist>
         <path refid="osgi.libs"/>
@@ -90,29 +96,29 @@
 
     <!-- Deletes all build products-->
     <target name="clean">
-        <delete dir="${builddir}"/>
+        <delete dir="${owllink-protege4.builddir}"/>
     </target>
 
     <!-- Compiles the source into a directory called classes inside
          the build directory -->
-    <target name="compile">
+    <target name="compile-plugin">
         <echo>ant.java.version = ${ant.java.version}</echo>
-        <mkdir dir="${classesdir}"/>
-        <javac srcdir="./.." destdir="${classesdir}" debug="on" target="1.5">
-            <classpath refid="classpath"/>
-            <include name="${sourcepath}"/>
+        <mkdir dir="${owllink-protege4.classesdir}"/>
+        <javac srcdir="${owllink-protege4.sourcepath}" destdir="${owllink-protege4.classesdir}" debug="on" target="1.5">
+            <classpath refid="owllink-protege4.classpath"/>
+           <!-- <include name="${owllink-protege4.sourcepath}"/>-->
         </javac>
     </target>
 
 
-    <target name="bundle">
-        <copy todir="${classesdir}" file="./../src/main/java/plugin.xml"/>
-        <copy todir="${classesdir}/lib">
-           <filelist dir="${libdir}">
+    <target name="bundle-plugin">
+        <copy todir="${owllink-protege4.classesdir}" file="./../src/main/java/plugin.xml"/>
+        <copy todir="${owllink-protege4.classesdir}/lib">
+           <filelist dir="${owllink-protege4.libdir}">
             <file name="owllink-bin.jar"/>
         </filelist>
         </copy>
-        <jar  basedir="${classesdir}" destfile="${bin-name}" manifest="./../src/main/java/MANIFEST.MF"/>
+        <jar  basedir="${owllink-protege4.classesdir}" destfile="${bundle-name}" manifest="./../src/main/java/MANIFEST.MF"/>
     </target>
 
 

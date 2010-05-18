@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, Ulm University
+ * Copyright (C) 2010, Ulm University
  *
  * Modifications to the initial code base are copyright of their
  * respective authors, or their employers as appropriate.  Authorship
