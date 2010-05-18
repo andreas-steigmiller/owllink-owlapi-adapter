@@ -1,0 +1,119 @@
+<!--
+  ~ Copyright (C) 2010, Ulm University
+  ~
+  ~ Modifications to the initial code base are copyright of their
+  ~ respective authors, or their employers as appropriate.  Authorship
+  ~ of the modifications may be determined from the ChangeLog placed at
+  ~ the end of this file.
+  ~
+  ~ This library is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU Lesser General Public
+  ~ License as published by the Free Software Foundation; either
+  ~ version 2.1 of the License, or (at your option) any later version.
+  ~
+  ~ This library is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this library; if not, write to the Free Software
+  ~ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  -->
+
+<project name="owllink-protege4">
+
+    <property name="version" value="1.0.0"/>
+
+    <!-- The directory that contains the jar file dependencies for
+         the class path and building a release -->
+    <property name="libdir" value="../../antbuild/build/"/>
+
+    <!-- The directory where intermediate build products will be placed -->
+    <property name="builddir" value="build"/>
+
+    <!-- A directory into which class files will be placed during the build answer-->
+    <property name="classesdir" value="${builddir}/classes"/>
+
+    <!-- The name of the jar file which contains the class files-->
+    <property name="bin-name" value="org.semanticweb.owllink.protege.jar"/>
+
+
+    <property name="sourcepath" value="src/main/java/**/*.java"/>
+
+    <property name="distdir" value="${builddir}/dist"/>
+
+
+    <!--
+        You have to adjust the protegehomedir. It should link to the protege 4.1 home directory.
+    -->
+    <property name="protegehomedir" value="/Applications/Protege_4.1_alpha"/>
+    <property name="osgilibdir" value="${protegehomedir}/bundles"/>
+    <property name="protegecorelibdir" value="${protegehomedir}/bundles"/>
+    <property name="pluginsdir" value="${protegehomedir}/plugins"/>
+
+
+    <path id="osgi.libs">
+        <filelist dir="${osgilibdir}">
+            <file name="org.eclipse.equinox.common.jar"/>
+            <file name="org.eclipse.equinox.registry.jar"/>
+            <file name="org.eclipse.equinox.supplement.jar"/>
+        </filelist>
+    </path>
+
+    <path id="protege.core.libs">
+        <filelist dir="${protegecorelibdir}">
+            <file name="org.protege.common.jar"/>
+            <file name="org.protege.editor.core.application.jar"/>
+        </filelist>
+    </path>
+
+    <path id="protege.editor.libs">
+        <filelist dir="${pluginsdir}">
+            <file name="org.protege.editor.owl.jar"/>
+            <file name="org.semanticweb.owl.owlapi.jar"/>
+        </filelist>
+    </path>
+
+
+    <!-- For the classpath, we just use all of the libraries in the
+  lib directory -->
+    <path id="classpath">
+        <filelist dir="${libdir}">
+            <file name="owllink-bin.jar"/>
+        </filelist>
+        <path refid="osgi.libs"/>
+        <path refid="protege.core.libs"/>
+        <path refid="protege.editor.libs"/>
+    </path>
+
+
+    <!-- Deletes all build products-->
+    <target name="clean">
+        <delete dir="${builddir}"/>
+    </target>
+
+    <!-- Compiles the source into a directory called classes inside
+         the build directory -->
+    <target name="compile">
+        <echo>ant.java.version = ${ant.java.version}</echo>
+        <mkdir dir="${classesdir}"/>
+        <javac srcdir="./.." destdir="${classesdir}" debug="on" target="1.5">
+            <classpath refid="classpath"/>
+            <include name="${sourcepath}"/>
+        </javac>
+    </target>
+
+
+    <target name="bundle">
+        <copy todir="${classesdir}" file="./../src/main/java/plugin.xml"/>
+        <copy todir="${classesdir}/lib">
+           <filelist dir="${libdir}">
+            <file name="owllink-bin.jar"/>
+        </filelist>
+        </copy>
+        <jar  basedir="${classesdir}" destfile="${bin-name}" manifest="./../src/main/java/MANIFEST.MF"/>
+    </target>
+
+
+</project>
