@@ -1,10 +1,12 @@
 Change Log
 ==========
 
-OWLlink API 1.0 (May 18, 2010)
+OWLlink API 1.0.1 (May 19, 2010)
 ------------------------------
 
 * ADDED: Protege 4.1 preliminary support
+
+* FIXED: Start script for pellet-server-OWLAPI3 (library path adjustments)
 
 
 OWLlink API 1.0 (May 07, 2010)

@@ -85,4 +85,15 @@ Tu run HermiT 1.2.x (x > 1) ( (c) by University of Oxford, England) out-of-the-b
     The OWLlink server component will start at localhost:8080
 
 
+----------------------
+OWLlink Protege Plugin
+----------------------
+
+To enable OWLlink support in Protege copy the file named "org.semanticweb.owllink.protege.jar" into
+the "plugin" folder of the Protege distribution and restart Protege. Note that the OWLlink Protege
+Plugin only works with Protege 4.1 or higher.
+
+
 Further information, documentation and examples can be found at http://owllink-owlapi.sourceforge.net
+
+(C) 2010 by Olaf Noppens
