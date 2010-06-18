@@ -134,6 +134,7 @@ public class OWLlinkHTTPXMLReasonerPreferencesPanel extends OWLPreferencesPanel 
         customLabelPane.add(urlPanel);
         customLabelPane.add(portNumberPanel);
         customLabelPane.add(checkConnectionPanel);
+
         c.add(customLabelPane);
 
         return c;

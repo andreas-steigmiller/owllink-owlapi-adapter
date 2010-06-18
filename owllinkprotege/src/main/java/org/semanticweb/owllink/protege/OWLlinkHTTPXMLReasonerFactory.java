@@ -26,7 +26,10 @@ package org.semanticweb.owllink.protege;
 import org.protege.editor.owl.model.inference.ProtegeOWLReasonerFactoryAdapter;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.owllink.OWLlinkReasonerConfiguration;
+import org.semanticweb.owlapi.owllink.OWLlinkReasonerIOException;
 import org.semanticweb.owlapi.owllink.OWLlinkReasonerRuntimeException;
+import org.semanticweb.owlapi.owllink.builtin.response.OWLlinkUnsatisfiableKBErrorResponseException;
+import org.semanticweb.owlapi.reasoner.InconsistentOntologyException;
 import org.semanticweb.owlapi.reasoner.IndividualNodeSetPolicy;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.ReasonerProgressMonitor;
@@ -54,24 +57,54 @@ public class OWLlinkHTTPXMLReasonerFactory extends ProtegeOWLReasonerFactoryAdap
     }
 
     public OWLReasoner createReasoner(OWLOntology owlOntology, ReasonerProgressMonitor progressMonitor) {
+        System.out.println("createReasoner");
         OWLlinkHTTPXMLReasonerPreferences prefs = OWLlinkHTTPXMLReasonerPreferences.getInstance();
         try {
             URL reasonerURL = new URL(prefs.getServerEndpointURL() + ":" + prefs.getServerEndpointPort());
             OWLlinkReasonerConfiguration configuration = new OWLlinkReasonerConfiguration(progressMonitor, reasonerURL, IndividualNodeSetPolicy.BY_SAME_AS);
             return factory.createNonBufferingReasoner(owlOntology, configuration);
-        } catch (MalformedURLException e) {
-            JOptionPane.showMessageDialog(null,
-                    "The given OWLlink server endpoint URL is not valid.\nUsing defaults (localhost, 8080).",
-                    "OWLlink server endpoint URL not valid",
-                    JOptionPane.ERROR_MESSAGE);
-        } catch (OWLlinkReasonerRuntimeException e) {
+        } catch (OWLlinkUnsatisfiableKBErrorResponseException e) {
+            throw new InconsistentOntologyException();
+        } catch (OWLlinkReasonerIOException e) {
             if (e.getCause() instanceof IOException) {
                 JOptionPane.showMessageDialog(null,
                         "Connection to the OWLlink server failed.",
                         "Connection failed",
                         JOptionPane.ERROR_MESSAGE);
             }
+        } catch (OWLlinkReasonerRuntimeException e) {
+
+        } catch (MalformedURLException e) {
+            JOptionPane.showMessageDialog(null,
+                    "The given OWLlink server endpoint URL is not valid.\nUsing defaults (localhost, 8080).",
+                    "OWLlink server endpoint URL not valid",
+                    JOptionPane.ERROR_MESSAGE);
         }
-        return factory.createNonBufferingReasoner(owlOntology);
+        return null;
+        /*} catch (MalformedURLException e) {
+            JOptionPane.showMessageDialog(null,
+                    "The given OWLlink server endpoint URL is not valid.\nUsing defaults (localhost, 8080).",
+                    "OWLlink server endpoint URL not valid",
+                    JOptionPane.ERROR_MESSAGE);
+        } catch (OWLlinkUnsatisfiableKBErrorResponseException e) {
+            System.err.println("unsatisfiableKB!");
+            throw new InconsistentOntologyException();
+        } catch (OWLlinkReasonerRuntimeException e) {
+            System.out.println("OWLlinkReasonerRuntimeException");
+            if (e.getCause() instanceof IOException) {
+                JOptionPane.showMessageDialog(null,
+                        "Connection to the OWLlink server failed.",
+                        "Connection failed",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            System.out.println("exception!");
+            if (e instanceof OWLlinkReasonerRuntimeException) {
+                System.out.println("wäre!");
+            }
+            e.printStackTrace();
+        }
+        return null;          */
+        // return factory.createNonBufferingReasoner(owlOntology);
     }
 }

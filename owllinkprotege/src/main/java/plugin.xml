@@ -24,8 +24,8 @@
 
 <plugin>
     <extension id="OWLlink.reasoner.factory" point="org.protege.editor.owl.inference_reasonerfactory">
-        <name value="OWLlink HTTPXML 0.5.0"/>
-        <label value="OWLlink HTTPXML 0.5.0"/>
+        <name value="OWLlink HTTPXML"/>
+        <label value="OWLlink HTTPXML"/>
         <class value="org.semanticweb.owllink.protege.OWLlinkHTTPXMLReasonerFactory"/>
     </extension>
 
