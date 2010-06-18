@@ -23,7 +23,7 @@
 
 <project name="owllink" default="distribution">
 
-    <property name="version" value="1.0.1"/>
+    <property name="version" value="1.0.2"/>
 
     <!-- The directory that contains the jar file dependencies for
          the class path and building a release -->
