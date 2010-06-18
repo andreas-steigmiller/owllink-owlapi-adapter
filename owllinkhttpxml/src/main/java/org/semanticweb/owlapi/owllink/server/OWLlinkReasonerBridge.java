@@ -37,9 +37,7 @@ import org.semanticweb.owlapi.owllink.server.legacy.OWLReasonerLegacyBridge;
 import org.semanticweb.owlapi.owllink.server.parser.OWLLinkRequestListener;
 import org.semanticweb.owlapi.owllink.server.parser.OWLlinkXMLRequestParserHandler;
 import org.semanticweb.owlapi.owllink.server.renderer.OWLlinkXMLResponseRenderer;
-import org.semanticweb.owlapi.owllink.server.response.ErrorResponse;
-import org.semanticweb.owlapi.owllink.server.response.ErrorResponseImpl;
-import org.semanticweb.owlapi.owllink.server.response.KBErrorResponseImpl;
+import org.semanticweb.owlapi.owllink.server.response.*;
 import org.semanticweb.owlapi.reasoner.*;
 import org.semanticweb.owlapi.reasoner.impl.*;
 import org.semanticweb.owlapi.util.CollectionFactory;
@@ -261,7 +259,16 @@ public class OWLlinkReasonerBridge implements RequestVisitor {
     }
 
     protected ErrorResponse handle(Exception e) {
-        if (e instanceof KBException) {
+        if (e instanceof InconsistentOntologyException) {
+            this.response = new UnsatisfiableKBErrorResponseImpl(e.getMessage() == null ? e.toString() : e.getMessage());
+        } else if (e instanceof AxiomNotInProfileException) {
+            StringBuilder errorString = new StringBuilder();
+            if (((AxiomNotInProfileException) e).getAxiom() != null)
+                errorString.append("axiom: " + ((AxiomNotInProfileException) e).getAxiom());
+            if (((AxiomNotInProfileException) e).getProfile() != null)
+                errorString.append("profile: " + ((AxiomNotInProfileException) e).getProfile().getName());
+            this.response = new ProfileViolationErrorResponseImpl(errorString.toString().isEmpty() ? e.toString() : errorString.toString());
+        } else if (e instanceof KBException) {
             this.response = new KBErrorResponseImpl(e.getMessage() == null ? e.toString() : e.getMessage());
         } else
             this.response = new ErrorResponseImpl(e.getMessage() == null ? e.toString() : e.getMessage());
@@ -294,7 +301,7 @@ public class OWLlinkReasonerBridge implements RequestVisitor {
             OWLReasoner reasoner = this.reasonersByKB.get(query.getKB());
             if (reasoner != null)
                 throw new OWLlinkErrorResponseException("KB " + query.getKB() + " already exists!");
-        } else 
+        } else
             kb = IRI.create("http://owllink.org#" + getClass().getName() + ".kb" + System.currentTimeMillis());
         OWLOntology ontology = null;
         try {
@@ -416,8 +423,7 @@ public class OWLlinkReasonerBridge implements RequestVisitor {
         java.util.Set<OWLDataProperty> properties = CollectionFactory.createSet();
         java.util.Set<Node<OWLDataProperty>> synsetSet = CollectionFactory.createSet();
         boolean topConsidered = false;
-        for (OWLDataProperty property: getAllDataProperties(query.getKB()))
-        {
+        for (OWLDataProperty property : getAllDataProperties(query.getKB())) {
             if (properties.contains(property)) continue;
             java.util.Set<OWLLiteral> literals =
                     reasoner.getDataPropertyValues(query.getSourceIndividual().asOWLNamedIndividual(), property);
@@ -1165,13 +1171,8 @@ public class OWLlinkReasonerBridge implements RequestVisitor {
     }
 
     public void answer(org.semanticweb.owlapi.owllink.builtin.requests.GetSubObjectProperties query) {
-        if (query.getOWLObjectPropertyExpression().isAnonymous()) {
-            this.response = new ErrorResponseImpl("Anonymous object property is not supported");
-            return;
-        }
-        java.util.Set<java.util.Set<OWLObjectProperty>> result;
         final OWLReasoner reasoner = getReasoner(query.getKB());
-        NodeSet<OWLObjectProperty> nodeSet = reasoner.getSubObjectProperties(query.getOWLObjectPropertyExpression().asOWLObjectProperty(), query.isDirect());
+        NodeSet<OWLObjectProperty> nodeSet = reasoner.getSubObjectProperties(query.getOWLObjectPropertyExpression(), query.isDirect());
         this.response = new SetOfObjectPropertySynsetsImpl(nodeSet.getNodes(), getWarning(reasoner));
     }
 
@@ -1287,27 +1288,19 @@ public class OWLlinkReasonerBridge implements RequestVisitor {
                 OWLOntology ontology = getOntologyManager(request.getKB()).getOntology(request.getKB());
                 getOntologyManager(request.getKB()).removeAxioms(ontology, request.getAxioms());
                 this.response = new OKImpl();
-                getReasoner(request.getKB()).prepareReasoner();
+                //getReasoner(request.getKB()).prepareReasoner();
             }
         } else
             this.response = new ErrorResponseImpl(query.getClass().getSimpleName() + " is not supported");
     }
 
     public void answer(org.semanticweb.owlapi.owllink.builtin.requests.GetSuperDataProperties query) {
-        if (query.getProperty().isAnonymous()) {
-            this.response = new ErrorResponseImpl("Anonymous object property is not supported");
-            return;
-        }
         OWLReasoner reasoner = getReasoner(query.getKB());
         NodeSet<OWLDataProperty> nodeSet = reasoner.getSuperDataProperties(query.getProperty(), query.isDirect());
         this.response = new SetOfDataPropertySynsetsImpl(nodeSet.getNodes(), getWarning(reasoner));
     }
 
     public void answer(org.semanticweb.owlapi.owllink.builtin.requests.GetSuperObjectProperties query) {
-        if (query.getProperty().isAnonymous()) {
-            this.response = new ErrorResponseImpl("Anonymous object property is not supported");
-            return;
-        }
         OWLReasoner reasoner = getReasoner(query.getKB());
         this.response = new SetOfObjectPropertySynsetsImpl(reasoner.getSuperObjectProperties(query.getProperty(), query.isDirect()).getNodes(), getWarning(reasoner));
     }
@@ -1419,7 +1412,7 @@ public class OWLlinkReasonerBridge implements RequestVisitor {
                 this.getOntologyManager(query.getKB()).addAxioms(this.getOntologyManager(query.getKB()).getOntology(query.getKB()), ontology.getAxioms());
             }
             reasoner.flush();
-            reasoner.prepareReasoner();
+            //reasoner.prepareReasoner();
             this.response = new OKImpl();
         } catch (Exception e) {
             handle(e);
@@ -1491,7 +1484,7 @@ public class OWLlinkReasonerBridge implements RequestVisitor {
             OWLOntology ontology = getOntologyManager(request.getKB()).getOntology(request.getKB());
             getOntologyManager(request.getKB()).addAxioms(ontology, request.getAxioms());
             this.response = new OKImpl();
-            getReasoner(request.getKB()).prepareReasoner();
+            // getReasoner(request.getKB()).prepareReasoner();
         } catch (Exception e) {
             handle(e);
         }

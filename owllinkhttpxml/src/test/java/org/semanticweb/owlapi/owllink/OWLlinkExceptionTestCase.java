@@ -21,22 +21,36 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-package org.semanticweb.owlapi.owllink.parser;
+package org.semanticweb.owlapi.owllink;
 
-import org.coode.owlapi.owlxmlparser.OWLXMLParserHandler;
-import org.semanticweb.owlapi.owllink.builtin.response.OWLlinkKBErrorResponseException;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.owllink.builtin.requests.GetTypes;
+import static org.semanticweb.owlapi.util.CollectionFactory.createSet;
+
+import java.util.Set;
 
 /**
  * Author: Olaf Noppens
- * Date: 25.10.2009
+ * Date: 18.06.2010
  */
-public class OWLlinkKBErrorElementHandler extends AbstractOWLlinkErrorHandler<OWLlinkKBErrorResponseException> {
-
-    public OWLlinkKBErrorElementHandler(OWLXMLParserHandler handler) {
-        super(handler);
+public class OWLlinkExceptionTestCase extends AbstractOWLlinkAxiomsTestCase {
+    @Override
+    protected Set<? extends OWLAxiom> createAxioms() {
+        Set<OWLAxiom> axioms = createSet();
+        axioms.add(getDataFactory().getOWLDifferentIndividualsAxiom(getOWLIndividual("i"), getOWLIndividual("j")));
+        axioms.add(getDataFactory().getOWLSameIndividualAxiom(getOWLIndividual("i"), getOWLIndividual("j")));
+        return axioms;
     }
 
-    public OWLlinkKBErrorResponseException getOWLLinkObject() {
-        return new OWLlinkKBErrorResponseException(getErrorString());
+    public void testInconsistentOntology() {
+        GetTypes query = new GetTypes(getKBIRI(), getOWLIndividual("i"));
+        //super.reasoner.answer(query);
+    }
+
+      public void testInconsistentOntologyOWLAPI() {
+        super.reasoner.getTypes(getOWLIndividual("i"), true);
+    }
+    public void testClassify() {
+        super.reasoner.prepareReasoner();
     }
 }

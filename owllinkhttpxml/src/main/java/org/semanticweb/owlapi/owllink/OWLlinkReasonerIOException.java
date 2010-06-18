@@ -21,22 +21,22 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-package org.semanticweb.owlapi.owllink.parser;
-
-import org.coode.owlapi.owlxmlparser.OWLXMLParserHandler;
-import org.semanticweb.owlapi.owllink.builtin.response.OWLlinkKBErrorResponseException;
+package org.semanticweb.owlapi.owllink;
 
 /**
  * Author: Olaf Noppens
- * Date: 25.10.2009
+ * Date: 18.06.2010
  */
-public class OWLlinkKBErrorElementHandler extends AbstractOWLlinkErrorHandler<OWLlinkKBErrorResponseException> {
-
-    public OWLlinkKBErrorElementHandler(OWLXMLParserHandler handler) {
-        super(handler);
+public class OWLlinkReasonerIOException extends OWLlinkReasonerRuntimeException {
+    public OWLlinkReasonerIOException(Throwable cause) {
+        super(cause);
     }
 
-    public OWLlinkKBErrorResponseException getOWLLinkObject() {
-        return new OWLlinkKBErrorResponseException(getErrorString());
+    public OWLlinkReasonerIOException(String message) {
+        super(message);
+    }
+
+    public OWLlinkReasonerIOException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

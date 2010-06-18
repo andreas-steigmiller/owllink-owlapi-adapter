@@ -21,22 +21,17 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-package org.semanticweb.owlapi.owllink.parser;
-
-import org.coode.owlapi.owlxmlparser.OWLXMLParserHandler;
-import org.semanticweb.owlapi.owllink.builtin.response.OWLlinkKBErrorResponseException;
+package org.semanticweb.owlapi.owllink.builtin.response;
 
 /**
+ * Represents a <a href="http://www.owllink.org/owllink-20091116/#ProtocolObjects">ProfileViolationError</a>
+ * in the OWLlink specification.
+ * <p/>
  * Author: Olaf Noppens
- * Date: 25.10.2009
+ * Date: 10.06.2010
  */
-public class OWLlinkKBErrorElementHandler extends AbstractOWLlinkErrorHandler<OWLlinkKBErrorResponseException> {
-
-    public OWLlinkKBErrorElementHandler(OWLXMLParserHandler handler) {
-        super(handler);
-    }
-
-    public OWLlinkKBErrorResponseException getOWLLinkObject() {
-        return new OWLlinkKBErrorResponseException(getErrorString());
+public class OWLlinkProfileViolationErrorResponseException extends OWLlinkSyntaxErrorException {
+    public OWLlinkProfileViolationErrorResponseException(String error) {
+        super(error);
     }
 }

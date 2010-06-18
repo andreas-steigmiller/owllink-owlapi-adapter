@@ -369,6 +369,18 @@ public class OWLlinkXMLParserHandler extends MyOWLXMLParserHandler {
             }
         });
 
+        addFactory(new AbstractOWLlinkElementHandlerFactory(OWLlinkXMLVocabulary.NOTSUPPORTEDDATATYPEERROR) {
+            public OWLlinkElementHandler createHandler(OWLXMLParserHandler handler) {
+                return new OWLlinkNotSupportedDatatypeErrorElementHandler(handler);
+            }
+        });
+
+        addFactory(new AbstractOWLlinkElementHandlerFactory(OWLlinkXMLVocabulary.PROFILEVIOLATIONERROR) {
+            public OWLlinkElementHandler createHandler(OWLXMLParserHandler handler) {
+                return new OWLlinkProfileViolationResponseErrorExceptionElementHandler(handler);
+            }
+        });
+
         addFactory(new AbstractOWLlinkElementHandlerFactory(OWLlinkXMLVocabulary.SEMANTIC_ERROR) {
             public OWLlinkElementHandler createHandler(OWLXMLParserHandler handler) {
                 return new OWLlinkSemanticErrorElementHandler(handler);
@@ -380,6 +392,13 @@ public class OWLlinkXMLParserHandler extends MyOWLXMLParserHandler {
                 return new OWLlinkSyntaxErrorElementHandler(handler);
             }
         });
+
+        addFactory(new AbstractOWLlinkElementHandlerFactory(OWLlinkXMLVocabulary.UNSATISFIABLEKBERROR) {
+            public OWLlinkElementHandler createHandler(OWLXMLParserHandler handler) {
+                return new OWLlinkUnsatisfiableKBErrorElementHandler(handler);
+            }
+        });
+
 
         addFactory(new AbstractOWLlinkElementHandlerFactory(OWLlinkXMLVocabulary.PREFIX) {
             public OWLlinkElementHandler createHandler(OWLXMLParserHandler handler) {

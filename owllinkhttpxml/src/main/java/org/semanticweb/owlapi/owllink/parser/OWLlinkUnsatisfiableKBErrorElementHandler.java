@@ -23,20 +23,22 @@
 
 package org.semanticweb.owlapi.owllink.parser;
 
+import org.coode.owlapi.owlxmlparser.OWLXMLParserException;
 import org.coode.owlapi.owlxmlparser.OWLXMLParserHandler;
-import org.semanticweb.owlapi.owllink.builtin.response.OWLlinkKBErrorResponseException;
+import org.semanticweb.owlapi.owllink.builtin.response.OWLlinkUnsatisfiableKBErrorResponseException;
 
 /**
  * Author: Olaf Noppens
- * Date: 25.10.2009
+ * Date: 10.06.2010
  */
-public class OWLlinkKBErrorElementHandler extends AbstractOWLlinkErrorHandler<OWLlinkKBErrorResponseException> {
+public class OWLlinkUnsatisfiableKBErrorElementHandler extends AbstractOWLlinkErrorHandler<OWLlinkUnsatisfiableKBErrorResponseException>{
 
-    public OWLlinkKBErrorElementHandler(OWLXMLParserHandler handler) {
+    public OWLlinkUnsatisfiableKBErrorElementHandler(OWLXMLParserHandler handler) {
         super(handler);
     }
 
-    public OWLlinkKBErrorResponseException getOWLLinkObject() {
-        return new OWLlinkKBErrorResponseException(getErrorString());
+    @Override
+    public OWLlinkUnsatisfiableKBErrorResponseException getOWLLinkObject() throws OWLXMLParserException {
+        return new OWLlinkUnsatisfiableKBErrorResponseException(getErrorString());
     }
 }

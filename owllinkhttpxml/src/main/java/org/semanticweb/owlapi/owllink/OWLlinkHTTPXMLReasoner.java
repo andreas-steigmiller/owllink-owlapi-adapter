@@ -32,7 +32,6 @@ import org.semanticweb.owlapi.reasoner.*;
 import org.semanticweb.owlapi.reasoner.impl.*;
 import org.semanticweb.owlapi.util.Version;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
@@ -68,7 +67,14 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
         Set<OWLAxiom> axioms = new HashSet<OWLAxiom>(getReasonerAxioms());
         if (axioms.size() > 0) {
             Tell tell = new Tell(defaultKnowledgeBase, axioms);
-            ResponseMessage message = performRequests(tell);
+            OK message = performRequestOWLAPI(tell);
+            try {
+                isConsistent();
+            } catch (InconsistentOntologyException e) {
+                throw new InconsistentOntologyException();
+            } catch (Exception e) {
+
+            }
         }
     }
 
@@ -135,18 +141,18 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
 
     public boolean isConsistent() throws ReasonerInterruptedException, TimeOutException {
         IsKBSatisfiable satisfiable = new IsKBSatisfiable(getDefaultKB());
-        BooleanResponse response = performRequest(satisfiable);
+        BooleanResponse response = performRequestOWLAPI(satisfiable);
         return response.getResult();
     }
 
     public boolean isSatisfiable(OWLClassExpression classExpression) throws ReasonerInterruptedException, TimeOutException, ClassExpressionNotInProfileException, FreshEntitiesException, InconsistentOntologyException {
         IsClassSatisfiable query = new IsClassSatisfiable(defaultKnowledgeBase, classExpression);
-        return performRequest(query).getResult();
+        return performRequestOWLAPI(query).getResult();
     }
 
     public boolean isEntailed(OWLAxiom axiom) throws ReasonerInterruptedException, UnsupportedEntailmentTypeException, TimeOutException, AxiomNotInProfileException, FreshEntitiesException {
         IsEntailed query = new IsEntailed(defaultKnowledgeBase, axiom);
-        return performRequest(query).getResult();
+        return performRequestOWLAPI(query).getResult();
     }
 
     public boolean isEntailed(Set<? extends OWLAxiom> axioms) throws ReasonerInterruptedException, UnsupportedEntailmentTypeException, TimeOutException, AxiomNotInProfileException, FreshEntitiesException {
@@ -183,20 +189,20 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
 
     public NodeSet<OWLClass> getSubClasses(OWLClassExpression ce, boolean direct) {
         GetSubClasses query = new GetSubClasses(defaultKnowledgeBase, ce, direct);
-        SetOfClassSynsets result = performRequest(query);
+        SetOfClassSynsets result = performRequestOWLAPI(query);
         return result;
     }
 
     public NodeSet<OWLClass> getSuperClasses(OWLClassExpression ce, boolean direct) throws InconsistentOntologyException, ClassExpressionNotInProfileException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         GetSuperClasses query = new GetSuperClasses(defaultKnowledgeBase, ce, direct);
-        SetOfClassSynsets result = performRequest(query);
+        SetOfClassSynsets result = performRequestOWLAPI(query);
         return result;
     }
 
     public NodeSet<OWLClass> getDisjointClasses(OWLClassExpression ce, boolean direct) {
         if (!direct) {
             GetDisjointClasses query = new GetDisjointClasses(defaultKnowledgeBase, ce);
-            return performRequest(query);
+            return performRequestOWLAPI(query);
         } else {
             throw new OWLlinkSemanticErrorResponseException("getDisjointClasses (direct) is not supported");
         }
@@ -205,7 +211,7 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
     public Node<OWLClass> getEquivalentClasses(OWLClassExpression ce) throws InconsistentOntologyException, ClassExpressionNotInProfileException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         GetEquivalentClasses query = new GetEquivalentClasses(defaultKnowledgeBase, ce);
         OWLClassNode node = new OWLClassNode();
-        for (OWLClass clazz : performRequest(query))
+        for (OWLClass clazz : performRequestOWLAPI(query))
             node.add(clazz);
         return node;
 
@@ -217,18 +223,18 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
 
     public NodeSet<OWLObjectProperty> getSubObjectProperties(OWLObjectPropertyExpression pe, boolean direct) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         GetSubObjectProperties query = new GetSubObjectProperties(defaultKnowledgeBase, pe, direct);
-        return performRequest(query);
+        return performRequestOWLAPI(query);
     }
 
     public NodeSet<OWLObjectProperty> getSuperObjectProperties(OWLObjectPropertyExpression pe, boolean direct) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         GetSuperObjectProperties query = new GetSuperObjectProperties(defaultKnowledgeBase, pe, direct);
-        return performRequest(query);
+        return performRequestOWLAPI(query);
     }
 
     public Node<OWLObjectProperty> getEquivalentObjectProperties(OWLObjectPropertyExpression pe) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         GetEquivalentObjectProperties query = new GetEquivalentObjectProperties(defaultKnowledgeBase, pe);
         OWLObjectPropertyNode node = new OWLObjectPropertyNode();
-        for (OWLObjectProperty prop : performRequest(query)) {
+        for (OWLObjectProperty prop : performRequestOWLAPI(query)) {
             node.add(prop);
         }
         return node;
@@ -257,7 +263,7 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
     public NodeSet<OWLObjectProperty> getDisjointObjectProperties(OWLObjectPropertyExpression pe, boolean direct) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         if (!direct) {
             GetDisjointObjectProperties properties = new GetDisjointObjectProperties(defaultKnowledgeBase, pe);
-            return performRequest(properties);
+            return performRequestOWLAPI(properties);
         }
         throw new OWLlinkSemanticErrorResponseException("getDisjointObjectProperties (direct) is not supported");
     }
@@ -298,23 +304,23 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
 
     public NodeSet<OWLDataProperty> getSubDataProperties(OWLDataProperty pe, boolean direct) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         GetSubDataProperties query = new GetSubDataProperties(defaultKnowledgeBase, pe, direct);
-        return performRequest(query);
+        return performRequestOWLAPI(query);
     }
 
     public NodeSet<OWLDataProperty> getSuperDataProperties(OWLDataProperty pe, boolean direct) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         GetSuperDataProperties query = new GetSuperDataProperties(defaultKnowledgeBase, pe, direct);
-        return performRequest(query);
+        return performRequestOWLAPI(query);
     }
 
     public Node<OWLDataProperty> getEquivalentDataProperties(OWLDataProperty pe) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         GetEquivalentDataProperties query = new GetEquivalentDataProperties(defaultKnowledgeBase, pe);
-        return performRequest(query);
+        return performRequestOWLAPI(query);
     }
 
     public NodeSet<OWLDataProperty> getDisjointDataProperties(OWLDataPropertyExpression pe, boolean direct) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         GetDisjointDataProperties query = new GetDisjointDataProperties(defaultKnowledgeBase, pe);
         if (!direct)
-            return performRequest(query);
+            return performRequestOWLAPI(query);
         else
             throw new OWLlinkSemanticErrorResponseException("getDisjointDataProperties (direct) is not supported");
     }
@@ -340,7 +346,7 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
 
     public NodeSet<OWLClass> getTypes(OWLNamedIndividual ind, boolean direct) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         GetTypes query = new GetTypes(defaultKnowledgeBase, ind, direct);
-        return performRequest(query);
+        return performRequestOWLAPI(query);
     }
 
     public NodeSet<OWLNamedIndividual> getObjectPropertyValues(OWLNamedIndividual ind, OWLObjectPropertyExpression pe) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
@@ -360,7 +366,7 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
 
     public Set<OWLLiteral> getDataPropertyValues(OWLNamedIndividual ind, OWLDataProperty pe) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         GetDataPropertyTargets query = new GetDataPropertyTargets(defaultKnowledgeBase, ind, pe);
-        return performRequest(query);
+        return performRequestOWLAPI(query);
     }
 
     public Node<OWLNamedIndividual> getSameIndividuals(OWLNamedIndividual ind) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
@@ -430,12 +436,12 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
 
     public void classify() throws OWLReasonerException {
         Classify classify = new Classify(defaultKnowledgeBase);
-        performRequests(classify);
+        performRequestOWLAPI(classify);
     }
 
     public void realise() throws OWLReasonerException {
         Realize realize = new Realize(defaultKnowledgeBase);
-        performRequests(realize);
+        performRequestOWLAPI(realize);
     }
 
 
@@ -452,19 +458,28 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
     }
 
     protected ResponseMessage performRequests(Request... request) {
-        try {
-            //session.setReasonerURL(this.reasonerURL);
-            return session.performRequests(request);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+        //session.setReasonerURL(this.reasonerURL);
+        return session.performRequests(request);
     }
 
     protected <R extends Response> R performRequest(Request<R> request) {
         ResponseMessage message = performRequests(request);
         return message.getResponse(request);
+    }
+
+    /**
+     * If an OWLLink error occurs the error will be tried to be thrown as OWLAPI exception,
+     * e.g., OWLlinkUnsatisfiableKBErrorResponseException as InconsistentOntologyException.
+     *
+     * @param request
+     * @param <R>
+     * @return
+     */
+    protected <R extends Response> R performRequestOWLAPI(Request<R> request) {
+        try {
+            return performRequest(request);
+        } catch (OWLlinkUnsatisfiableKBErrorResponseException exception) {
+            throw new InconsistentOntologyException();
+        }
     }
 }

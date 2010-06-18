@@ -118,6 +118,7 @@ public class HTTPSessionImpl implements HTTPSession {
 
     /**
      * Gets the URL of the reasoner.
+     *
      * @return url of the reasoner
      */
     public String getReasonerURL() {
@@ -129,7 +130,7 @@ public class HTTPSessionImpl implements HTTPSession {
     }
 
 
-    public ResponseMessage performRequests(Request... request) throws Exception {
+    public ResponseMessage performRequests(Request... request)  {
         OWLlinkXMLFactoryRegistry registry = OWLlinkXMLFactoryRegistry.getInstance();
         try {
             //Handle the request
@@ -214,6 +215,8 @@ public class HTTPSessionImpl implements HTTPSession {
             return responseMessage;
         }
         catch (IOException e) {
+            throw new OWLlinkReasonerIOException(e.getMessage(), e);
+        } catch (Exception e) {
             throw new OWLlinkReasonerRuntimeException(e.getMessage(), e);
         }
     }

@@ -34,6 +34,7 @@ import org.semanticweb.owlapi.owllink.builtin.response.*;
 import org.semanticweb.owlapi.owllink.renderer.OWLlinkXMLWriter;
 import org.semanticweb.owlapi.owllink.server.response.ErrorResponse;
 import org.semanticweb.owlapi.owllink.server.response.KBErrorResponse;
+import org.semanticweb.owlapi.owllink.server.response.UnsatisfiableKBErrorResponse;
 import org.semanticweb.owlapi.reasoner.Node;
 
 import java.io.Writer;
@@ -172,6 +173,8 @@ public class OWLlinkXMLResponseRenderer {
         public Void visit(Response response) {
             if (response instanceof KBErrorResponse)
                 visit((KBErrorResponse) response);
+            else if (response instanceof UnsatisfiableKBErrorResponse)
+                visit((UnsatisfiableKBErrorResponse) response);
             else if (response instanceof ErrorResponse)
                 visit((ErrorResponse) response);
             return null;
@@ -192,6 +195,13 @@ public class OWLlinkXMLResponseRenderer {
             writer.writeAttribute(ERROR_ATTRIBUTE.getURI(), response.getErrorString());
             writer.writeEndElement();
         }
+
+        public void visit(UnsatisfiableKBErrorResponse response) {
+            writer.writeStartElement(UNSATISFIABLEKBERROR);
+            writer.writeAttribute(ERROR_ATTRIBUTE.getURI(), response.getErrorString());
+            writer.writeEndElement();
+        }
+
 
         public Void visit(BooleanResponse response) {
             writer.writeStartElement(BOOLEAN_RESPONSE);
