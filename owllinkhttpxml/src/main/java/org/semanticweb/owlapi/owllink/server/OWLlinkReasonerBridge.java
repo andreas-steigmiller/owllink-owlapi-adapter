@@ -874,16 +874,14 @@ public class OWLlinkReasonerBridge implements RequestVisitor {
         Set<Node<OWLObjectProperty>> synsets = CollectionFactory.createSet();
         Set<Node<OWLObjectProperty>> setOfNodes = getAllEquivalentObjectProperties(query.getKB());
         boolean topConsidered = false;
-        for (OWLIndividual indi : getAllIndividuals(query.getKB())) {
-            if (indi.isAnonymous()) continue;
-            for (Node<OWLObjectProperty> node : setOfNodes) {
-                NodeSet<OWLNamedIndividual> nodeSet = reasoner.getObjectPropertyValues(indi.asOWLNamedIndividual(),
-                        node.getRepresentativeElement());
-                if (!nodeSet.isEmpty()) {
-                    synsets.add(node);
-                    if (!topConsidered) {
-                        topConsidered = node.contains(this.topObjectProperty);
-                    }
+
+        final OWLNamedIndividual individual = query.getIndividual().asOWLNamedIndividual();
+        for (Node<OWLObjectProperty> propertyNode : setOfNodes) {
+            NodeSet<OWLNamedIndividual> nodeSet = reasoner.getObjectPropertyValues(individual, propertyNode.getRepresentativeElement());
+            if (!nodeSet.isEmpty()) {
+                synsets.add(propertyNode);
+                if (!topConsidered) {
+                    topConsidered = propertyNode.contains(this.topObjectProperty);
                 }
             }
         }
@@ -891,7 +889,6 @@ public class OWLlinkReasonerBridge implements RequestVisitor {
             synsets.add(reasoner.getEquivalentObjectProperties(this.topObjectProperty));
         }
         this.response = new SetOfObjectPropertySynsetsImpl(synsets, getWarning(reasoner));
-
     }
 
     public void answer(GetObjectPropertiesOfTarget query) {
