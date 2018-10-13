@@ -41,6 +41,8 @@ package org.semanticweb.owlapi.owllink;
 
 import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
+
+import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.owllink.builtin.response.OWLlinkErrorResponseException;
 import org.semanticweb.owlapi.owllink.builtin.response.ResponseMessage;
@@ -153,8 +155,10 @@ public class HTTPSessionImpl implements HTTPSession {
             StringWriter writer = new StringWriter();
             OWLlinkXMLRenderer renderer = new OWLlinkXMLRenderer();
             renderer.addFactories(registry.getRequestRendererFactories());
+            
+            OWLOntology ontology = manager.createOntology();
 
-            Request[] askedRequests = renderer.render(writer, prov, request);
+            Request[] askedRequests = renderer.render(writer, prov, ontology, request);
 
             HttpURLConnection conn = (HttpURLConnection) reasonerURL.openConnection();
             conn.setRequestProperty("Content-Type", "text/xml");
@@ -210,7 +214,7 @@ public class HTTPSessionImpl implements HTTPSession {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
             SAXParser parser = factory.newSAXParser();
-            OWLlinkXMLParserHandler handler = new OWLlinkXMLParserHandler(manager.createOntology(), prov, askedRequests, null);
+            OWLlinkXMLParserHandler handler = new OWLlinkXMLParserHandler(ontology, prov, askedRequests, null);
             handler.addFactories(registry.getParserFactories());
             parser.parse(is, handler);
             reader.close();

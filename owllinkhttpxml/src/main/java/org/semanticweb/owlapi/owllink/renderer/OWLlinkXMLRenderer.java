@@ -41,6 +41,7 @@ package org.semanticweb.owlapi.owllink.renderer;
 
 import org.semanticweb.owlapi.io.OWLRendererException;
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.owllink.KBRequest;
 import static org.semanticweb.owlapi.owllink.OWLlinkXMLVocabulary.*;
 import org.semanticweb.owlapi.owllink.PrefixManagerProvider;
@@ -50,6 +51,7 @@ import org.semanticweb.owlapi.owllink.builtin.requests.GetPrefixes;
 import org.semanticweb.owlapi.owllink.builtin.requests.RequestVisitor;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
 
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.*;
 
@@ -79,8 +81,8 @@ public class OWLlinkXMLRenderer extends BuiltinRequestRenderer {
     }
 
 
-    public Request[] render(final Writer writer, final PrefixManagerProvider prov, final Request... requests) throws OWLRendererException {
-        final OWLlinkXMLWriter w = new OWLlinkXMLWriter(writer, prov);
+    public Request[] render(final Writer writer, final PrefixManagerProvider prov, OWLOntology ontology, final Request... requests) throws OWLRendererException {
+        final OWLlinkXMLWriter w = new OWLlinkXMLWriter(writer, prov, ontology);
         w.startDocument(true);
         int i = 0;
         BitSet additionalQueryIndex = new BitSet();

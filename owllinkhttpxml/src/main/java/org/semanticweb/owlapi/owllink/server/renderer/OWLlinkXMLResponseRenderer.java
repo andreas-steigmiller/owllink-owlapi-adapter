@@ -70,9 +70,9 @@ public class OWLlinkXMLResponseRenderer {
     }
 
     @Deprecated
-    public void render(Writer writer, PrefixManagerProvider prov, IRI defaultKB, Response... responses) throws OWLRendererException {
+    public void render(Writer writer, PrefixManagerProvider prov, OWLOntology ontology, IRI defaultKB, Response... responses) throws OWLRendererException {
         this.defaultKB = defaultKB;
-        OWLlinkXMLWriter w = new OWLlinkXMLWriter(writer, prov);
+        OWLlinkXMLWriter w = new OWLlinkXMLWriter(writer, prov, ontology);
         w.startDocument(false);
         renderer.setWriter(w);
         for (Response response : responses) {
@@ -87,8 +87,8 @@ public class OWLlinkXMLResponseRenderer {
     }
 
 
-    public void render(Writer writer, PrefixManagerProvider prov, List<Request> requests, List<Response> responses) throws OWLRendererException {
-        OWLlinkXMLWriter w = new OWLlinkXMLWriter(writer, prov);
+    public void render(Writer writer, PrefixManagerProvider prov, OWLOntology ontology, List<Request> requests, List<Response> responses) throws OWLRendererException {
+        OWLlinkXMLWriter w = new OWLlinkXMLWriter(writer, prov, ontology);
         w.startDocument(false);
         renderer.setWriter(w);
         int count = responses.size();

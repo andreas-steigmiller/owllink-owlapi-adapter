@@ -213,7 +213,7 @@ public class OWLlinkReasonerBridge implements RequestVisitor {
             OutputStreamWriter writer = new OutputStreamWriter(gzipOut == null ? out : gzipOut);
             OWLlinkXMLResponseRenderer renderer = new OWLlinkXMLResponseRenderer();
             List<Request> requests = handler.getRequest();
-            renderer.render(writer, prov, requests, responses);
+            renderer.render(writer, prov, ontology, requests, responses);
             writer.flush();
             if (gzipOut != null)
                 gzipOut.finish();

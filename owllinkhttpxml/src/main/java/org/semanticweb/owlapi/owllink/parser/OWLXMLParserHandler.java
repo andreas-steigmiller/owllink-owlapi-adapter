@@ -63,6 +63,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLRuntimeException;
+import org.semanticweb.owlapi.model.OntologyConfigurator;
 import org.semanticweb.owlapi.util.RemappingIndividualProvider;
 import org.semanticweb.owlapi.vocab.Namespaces;
 import org.xml.sax.Attributes;
@@ -146,7 +147,7 @@ public class OWLXMLParserHandler extends DefaultHandler implements OWLAnonymousI
         bases = new Stack<>();
         this.configuration = configuration;
         handlerStack = new ArrayList<>();
-        anonProvider = new RemappingIndividualProvider(owlOntologyManager.getOWLDataFactory());
+        anonProvider = new RemappingIndividualProvider(new OntologyConfigurator(), owlOntologyManager.getOWLDataFactory());
         prefixName2PrefixMap.put("owl:", Namespaces.OWL.toString());
         prefixName2PrefixMap.put("xsd:", Namespaces.XSD.toString());
         if (topHandler != null) {

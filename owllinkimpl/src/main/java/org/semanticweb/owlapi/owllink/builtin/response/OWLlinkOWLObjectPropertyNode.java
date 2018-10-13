@@ -45,7 +45,9 @@ import org.semanticweb.owlapi.reasoner.Node;
 import org.semanticweb.owlapi.reasoner.impl.DefaultNode;
 import org.semanticweb.owlapi.reasoner.impl.OWLObjectPropertyNode;
 
+import uk.ac.manchester.cs.owl.owlapi.InternalizedEntities;
 
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -53,6 +55,7 @@ import java.util.Set;
  * Date: 11.10.2010
  */
 public class OWLlinkOWLObjectPropertyNode extends DefaultNode<OWLObjectProperty> {
+	
 
     public OWLlinkOWLObjectPropertyNode() {
     }
@@ -66,13 +69,13 @@ public class OWLlinkOWLObjectPropertyNode extends DefaultNode<OWLObjectProperty>
     }
 
     @Override
-    protected OWLObjectProperty getTopEntity() {
-        return TOP_OBJECT_PROPERTY;
+    protected Optional<OWLObjectProperty> getTopEntity() {
+        return Optional.of(InternalizedEntities.OWL_TOP_OBJECT_PROPERTY);
     }
 
     @Override
-    protected OWLObjectProperty getBottomEntity() {
-        return BOTTOM_OBJECT_PROPERTY;
+    protected Optional<OWLObjectProperty> getBottomEntity() {
+        return Optional.of(InternalizedEntities.OWL_BOTTOM_OBJECT_PROPERTY);
     }
 
     public Node<OWLObjectPropertyExpression> asNode() {

@@ -42,7 +42,7 @@ package org.semanticweb.owlapi.owllink.renderer;
 import org.semanticweb.owlapi.owlxml.renderer.OWLXMLWriter;
 import org.semanticweb.owlapi.rdf.rdfxml.renderer.XMLWriter;
 import org.semanticweb.owlapi.rdf.rdfxml.renderer.XMLWriterNamespaceManager;
-import org.semanticweb.owlapi.rdf.rdfxml.renderer.XMLWriterFactory;
+import org.semanticweb.owlapi.rdf.rdfxml.renderer.XMLWriterImpl;
 import org.semanticweb.owlapi.io.OWLRendererException;
 import org.semanticweb.owlapi.io.OWLRendererIOException;
 import org.semanticweb.owlapi.model.*;
@@ -52,6 +52,7 @@ import org.semanticweb.owlapi.vocab.OWLFacet;
 import org.semanticweb.owlapi.vocab.OWLXMLVocabulary;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.util.Comparator;
@@ -77,7 +78,7 @@ public class MyOWLXMLWriter extends OWLXMLWriter {
         }
     });
 
-    public MyOWLXMLWriter(Writer writer, OWLOntology ontology) {
+    public MyOWLXMLWriter(PrintWriter writer, OWLOntology ontology) {
         super(writer, ontology);
         XMLWriterNamespaceManager nsm = new XMLWriterNamespaceManager(Namespaces.OWL.toString());
         nsm.setPrefix("xsd", Namespaces.XSD.toString());
@@ -88,11 +89,12 @@ public class MyOWLXMLWriter extends OWLXMLWriter {
         if (ontology != null && !ontology.isAnonymous()) {
             base = ontology.getOntologyID().getOntologyIRI().toString();
         }
-        this.writer = XMLWriterFactory.createXMLWriter(writer, nsm, base);
+        this.writer = new XMLWriterImpl(writer, nsm, base, ontology.getOWLOntologyManager()
+                .getOntologyWriterConfiguration());
     }
 
-    public MyOWLXMLWriter(Writer baseWriter, XMLWriter writer, OWLOntology ontology) {
-        super(baseWriter, null);
+    public MyOWLXMLWriter(PrintWriter baseWriter, XMLWriter writer, OWLOntology ontology) {
+        super(baseWriter, ontology);
         this.writer = writer;
     }
 
@@ -111,7 +113,7 @@ public class MyOWLXMLWriter extends OWLXMLWriter {
      * @param prefixName The name of the prefix (e.g.  owl: is the prefix name for the OWL prefix)
      * @param iri        The prefix iri
      */
-    public void writePrefix(String prefixName, String iri) throws IOException {
+    public void writePrefix(String prefixName, String iri) {
         writer.writeStartElement(OWLXMLVocabulary.PREFIX.getIRI());
         if (prefixName.endsWith(":")) {
             String attName = prefixName.substring(0, prefixName.length() - 1);
@@ -146,49 +148,29 @@ public class MyOWLXMLWriter extends OWLXMLWriter {
 
 
     public void startDocument(OWLOntology ontology) throws OWLRendererException {
-        try {
-            writer.startDocument(OWLXMLVocabulary.ONTOLOGY.getIRI());
-            if (!ontology.isAnonymous()) {
-                writer.writeAttribute(Namespaces.OWL + "ontologyIRI", ontology.getOntologyID().getOntologyIRI().toString());
-                if (ontology.getOntologyID().getVersionIRI() != null) {
-                    writer.writeAttribute(Namespaces.OWL + "versionIRI", ontology.getOntologyID().getVersionIRI().toString());
-                }
-            }
-        }
-        catch (IOException e) {
-            throw new OWLRendererIOException(e);
-        }
+        writer.startDocument(OWLXMLVocabulary.ONTOLOGY.getIRI());
+		if (!ontology.isAnonymous()) {
+		    writer.writeAttribute(Namespaces.OWL + "ontologyIRI", ontology.getOntologyID().getOntologyIRI().toString());
+		    if (ontology.getOntologyID().getVersionIRI() != null) {
+		        writer.writeAttribute(Namespaces.OWL + "versionIRI", ontology.getOntologyID().getVersionIRI().toString());
+		    }
+		}
     }
 
 
     public void endDocument() {
-        try {
-            writer.endDocument();
-            writer.writeComment(VersionInfo.getVersionInfo().getGeneratedByMessage());
-        }
-        catch (IOException e) {
-            throw new OWLRuntimeException(e);
-        }
+        writer.endDocument();
+		writer.writeComment(VersionInfo.getVersionInfo().getGeneratedByMessage());
     }
 
 
     public void writeStartElement(OWLXMLVocabulary name) {
-        try {
-            writer.writeStartElement(name.getIRI());
-        }
-        catch (IOException e) {
-            throw new OWLRuntimeException(e);
-        }
+        writer.writeStartElement(name.getIRI());
     }
 
 
     public void writeEndElement() {
-        try {
-            writer.writeEndElement();
-        }
-        catch (IOException e) {
-            throw new OWLRuntimeException(e);
-        }
+        writer.writeEndElement();
     }
 
 
@@ -198,41 +180,26 @@ public class MyOWLXMLWriter extends OWLXMLWriter {
      * @param datatype The datatype
      */
     public void writeDatatypeAttribute(OWLDatatype datatype) {
-        try {
-            writer.writeAttribute(OWLXMLVocabulary.DATATYPE_IRI.getIRI().toString(), datatype.getIRI().toString());
-        }
-        catch (IOException e) {
-            throw new OWLRuntimeException(e);
-        }
+        writer.writeAttribute(OWLXMLVocabulary.DATATYPE_IRI.getIRI().toString(), datatype.getIRI().toString());
     }
 
     public void writeNodeIDAttribute(NodeID nodeID) {
-        try {
-            writer.writeAttribute(OWLXMLVocabulary.NODE_ID.getIRI().toString(), nodeID.toString());
-        }
-        catch (IOException e) {
-            throw new OWLRuntimeException(e);
-        }
+        writer.writeAttribute(OWLXMLVocabulary.NODE_ID.getIRI().toString(), nodeID.toString());
     }
 
     public void writeIRIAttribute(IRI iri) {
-        try {
-            String attName = OWLXMLVocabulary.IRI_ATTRIBUTE.getIRI().toString();
-            String value = iri.toString();
-            if (value.startsWith(writer.getXMLBase())) {
-                writer.writeAttribute(attName, value.substring(writer.getXMLBase().length(), value.length()));
-            } else {
-                String val = getIRIString(iri.toURI());
-                if (!val.equals(iri.toString())) {
-                    writer.writeAttribute(OWLXMLVocabulary.ABBREVIATED_IRI_ATTRIBUTE.getIRI().toString(), val);
-                } else {
-                    writer.writeAttribute(attName, val);
-                }
-            }
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        String attName = OWLXMLVocabulary.IRI_ATTRIBUTE.getIRI().toString();
+		String value = iri.toString();
+		if (value.startsWith(writer.getXMLBase())) {
+		    writer.writeAttribute(attName, value.substring(writer.getXMLBase().length(), value.length()));
+		} else {
+		    String val = getIRIString(iri.toURI());
+		    if (!val.equals(iri.toString())) {
+		        writer.writeAttribute(OWLXMLVocabulary.ABBREVIATED_IRI_ATTRIBUTE.getIRI().toString(), val);
+		    } else {
+		        writer.writeAttribute(attName, val);
+		    }
+		}
     }
 
 
@@ -244,77 +211,48 @@ public class MyOWLXMLWriter extends OWLXMLWriter {
      * @throws IOException
      */
     public void writeIRIElement(IRI iri) {
-        try {
-            String iriString = iri.toString();
-            if (iriString.startsWith(writer.getXMLBase())) {
-                writeStartElement(OWLXMLVocabulary.IRI_ELEMENT);
-                writeTextContent(iriString.substring(writer.getXMLBase().length(), iriString.length()));
-                writeEndElement();
-            } else {
-                String val = getIRIString(iri.toURI());
-                if (!val.equals(iriString)) {
-                    writeStartElement(OWLXMLVocabulary.ABBREVIATED_IRI_ELEMENT);
-                    writer.writeTextContent(val);
-                    writeEndElement();
-                } else {
-                    writeStartElement(OWLXMLVocabulary.IRI_ELEMENT);
-                    writer.writeTextContent(val);
-                    writeEndElement();
-                }
-            }
-        } catch (IOException e) {
-            throw new OWLRuntimeException(e);
-        }
+        String iriString = iri.toString();
+		if (iriString.startsWith(writer.getXMLBase())) {
+		    writeStartElement(OWLXMLVocabulary.IRI_ELEMENT);
+		    writeTextContent(iriString.substring(writer.getXMLBase().length(), iriString.length()));
+		    writeEndElement();
+		} else {
+		    String val = getIRIString(iri.toURI());
+		    if (!val.equals(iriString)) {
+		        writeStartElement(OWLXMLVocabulary.ABBREVIATED_IRI_ELEMENT);
+		        writer.writeTextContent(val);
+		        writeEndElement();
+		    } else {
+		        writeStartElement(OWLXMLVocabulary.IRI_ELEMENT);
+		        writer.writeTextContent(val);
+		        writeEndElement();
+		    }
+		}
 
     }
 
     public void writeLangAttribute(String lang) {
-        try {
-            writer.writeAttribute(Namespaces.XML + "lang", lang);
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        writer.writeAttribute(Namespaces.XML + "lang", lang);
     }
 
 
     public void writeCardinalityAttribute(int cardinality) {
-        try {
-            writer.writeAttribute(OWLXMLVocabulary.CARDINALITY_ATTRIBUTE.getIRI().toString(), Integer.toString(cardinality));
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        writer.writeAttribute(OWLXMLVocabulary.CARDINALITY_ATTRIBUTE.getIRI().toString(), Integer.toString(cardinality));
     }
 
 
     public void writeTextContent(String text) {
-        try {
-            writer.writeTextContent(text);
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        writer.writeTextContent(text);
     }
 
 
     public void writeFacetAttribute(OWLFacet facet) {
-        try {
-            writer.writeAttribute(OWLXMLVocabulary.DATATYPE_FACET.getIRI().toString(), facet.getIRI().toString());
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        writer.writeAttribute(OWLXMLVocabulary.DATATYPE_FACET.getIRI().toString(), facet.getIRI().toString());
     }
 
 
     public void writeAnnotationURIAttribute(URI uri) {
-        try {
-            writer.writeAttribute(OWLXMLVocabulary.ANNOTATION_URI.toString(), uri.toString());
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        writer.writeAttribute(OWLXMLVocabulary.ANNOTATION_URI.toString(), uri.toString());
     }
 
 }

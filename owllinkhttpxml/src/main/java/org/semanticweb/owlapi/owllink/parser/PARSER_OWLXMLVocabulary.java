@@ -147,6 +147,7 @@ import org.semanticweb.owlapi.model.OWLImportsDeclaration;
 import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLObject;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyID;
@@ -1463,7 +1464,7 @@ class OWLDatatypeDefinitionElementHandler extends AbstractOWLAxiomElementHandler
     @Override
     public void handleChild(AbstractOWLDataRangeHandler h) {
         OWLDataRange handledDataRange = h.getOWLObject();
-        if (handledDataRange.isDatatype() && datatype == null) {
+        if (handledDataRange.isOWLDatatype() && datatype == null) {
             datatype = handledDataRange.asOWLDatatype();
         } else {
             dataRange = handledDataRange;
@@ -1551,7 +1552,7 @@ class OWLDatatypeRestrictionElementHandler extends AbstractOWLDataRangeHandler {
     @Override
     public void handleChild(AbstractOWLDataRangeHandler h) {
         OWLDataRange dr = h.getOWLObject();
-        if (dr.isDatatype()) {
+        if (dr.isOWLDatatype()) {
             restrictedDataRange = dr.asOWLDatatype();
         }
     }
@@ -1883,7 +1884,7 @@ class OWLInverseObjectPropertyElementHandler extends AbstractOWLObjectPropertyEl
     @Override
     void endObjectPropertyElement() {
         ensureNotNull(inverse, OBJECT_INVERSE_OF.getShortForm());
-        setOWLObjectPropertyExpression(df.getOWLObjectInverseOf(verifyNotNull(inverse)));
+        setOWLObjectPropertyExpression(df.getOWLObjectInverseOf((OWLObjectProperty) verifyNotNull(inverse)));
     }
 }
 
@@ -2795,15 +2796,15 @@ class OWLOntologyHandler extends OWLElementHandler<OWLOntology> {
     @Override
     public void attribute(String localName, String value) {
         if (localName.equals("ontologyIRI")) {
-            OWLOntologyID newID = new OWLOntologyID(Optional.of(IRI.create(value)),
-                handler.getOntology().getOntologyID().getVersionIRI());
+            OWLOntologyID newID = new OWLOntologyID(Optional.of(IRI.create(value)).orNull(),
+                handler.getOntology().getOntologyID().getVersionIRI().orElse(null));
             handler.getOWLOntologyManager()
                 .applyChange(new SetOntologyID(handler.getOntology(), newID));
         }
         if (localName.equals("versionIRI")) {
             OWLOntologyID newID =
-                new OWLOntologyID(handler.getOntology().getOntologyID().getOntologyIRI(),
-                    Optional.of(IRI.create(value)));
+                new OWLOntologyID(handler.getOntology().getOntologyID().getOntologyIRI().orElse(null),
+                    Optional.of(IRI.create(value)).orNull());
             handler.getOWLOntologyManager()
                 .applyChange(new SetOntologyID(handler.getOntology(), newID));
         }

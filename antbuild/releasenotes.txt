@@ -2,11 +2,11 @@ Documentation can be found at http://owllink-owlapi.sourceforge.net
 
 
 ----------------------------------------------------------------------
-Release 1.4.0-alpha
+Release 1.5.0-alpha
 ----------------------------------------------------------------------
 This version of the API includes the following changes:
-- experimental OWL API 4 support (not completed)
-- experimental support for Protege 5 (maybe completed)
+- experimental OWL API 5 support (not completed)
+
 
 
 ----------------------------------------------------------------------

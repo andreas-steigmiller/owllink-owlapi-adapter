@@ -41,14 +41,15 @@ package org.semanticweb.owlapi.owllink.renderer;
 
 
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLOntologyWriterConfiguration;
 import org.semanticweb.owlapi.rdf.rdfxml.renderer.IllegalElementNameException;
 import org.semanticweb.owlapi.rdf.rdfxml.renderer.XMLWriter;
 import org.semanticweb.owlapi.rdf.rdfxml.renderer.XMLWriterNamespaceManager;
-import org.semanticweb.owlapi.rdf.rdfxml.renderer.XMLWriterPreferences;
 import org.semanticweb.owlapi.util.EscapeUtils;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.util.*;
@@ -62,7 +63,7 @@ public class MyXMLWriterImpl implements XMLWriter {
 
     private Stack<XMLElement> elementStack;
 
-    private Writer writer;
+    private PrintWriter writer;
 
     private String encoding;
 
@@ -80,19 +81,21 @@ public class MyXMLWriterImpl implements XMLWriter {
 
     private static final String PERCENT_ENTITY = "&#37;";
 
+    protected final OWLOntologyWriterConfiguration xmlPreferences;
 
-    public MyXMLWriterImpl(Writer writer, XMLWriterNamespaceManager xmlWriterNamespaceManager) {
-        this(writer, xmlWriterNamespaceManager, "UTF-8");
+    public MyXMLWriterImpl(PrintWriter writer, XMLWriterNamespaceManager xmlWriterNamespaceManager, OWLOntologyWriterConfiguration preferences) {
+        this(writer, xmlWriterNamespaceManager, "UTF-8", preferences);
     }
 
 
-    public MyXMLWriterImpl(Writer writer, XMLWriterNamespaceManager xmlWriterNamespaceManager, String xmlBase) {
-        this.writer = writer;
+    public MyXMLWriterImpl(Writer writer, XMLWriterNamespaceManager xmlWriterNamespaceManager, String xmlBase, OWLOntologyWriterConfiguration preferences) {
+        this.writer = new PrintWriter(writer);
         this.xmlWriterNamespaceManager = xmlWriterNamespaceManager;
         this.xmlBase = xmlBase;
         this.xmlBaseURI = URI.create(xmlBase);
         this.encoding = "";
         elementStack = new Stack<XMLElement>();
+        this.xmlPreferences = preferences;
         setupEntities();
     }
 
@@ -187,12 +190,12 @@ public class MyXMLWriterImpl implements XMLWriter {
     }
 
     @Override
-    public void startDocument(IRI iri) throws IOException {
+    public void startDocument(IRI iri) {
         startDocument(iri.toString());
     }
 
 
-    public void writeStartElement(String name) throws IOException {
+    public void writeStartElement(String name) {
         String qName = xmlWriterNamespaceManager.getQName(name);
         if (qName == null || qName.equals(name)) {
             if (!isValidQName(name)) {
@@ -231,7 +234,7 @@ public class MyXMLWriterImpl implements XMLWriter {
     }
 
 
-    public void writeEndElement() throws IOException {
+    public void writeEndElement() {
         // Pop the element off the stack and write it out
         if (!elementStack.isEmpty()) {
             XMLElement element = elementStack.pop();
@@ -246,7 +249,7 @@ public class MyXMLWriterImpl implements XMLWriter {
     }
 
     @Override
-    public void writeAttribute(IRI iri, String s) throws IOException {
+    public void writeAttribute(IRI iri, String s) {
         writeAttribute(iri.toString(), s);
     }
 
@@ -257,7 +260,7 @@ public class MyXMLWriterImpl implements XMLWriter {
     }
 
 
-    public void writeComment(String commentText) throws IOException {
+    public void writeComment(String commentText) {
         XMLElement element = new XMLElement(null, elementStack.size());
         element.setText("<!-- " + commentText + " -->");
         if (!elementStack.isEmpty()) {
@@ -274,7 +277,7 @@ public class MyXMLWriterImpl implements XMLWriter {
     }
 
 
-    private void writeEntities(String rootName) throws IOException {
+    private void writeEntities(String rootName) {
         writer.write("\n\n<!DOCTYPE " + xmlWriterNamespaceManager.getQName(rootName) + " [\n");
         for (String entityVal : entities.keySet()) {
             String entity = entities.get(entityVal);
@@ -291,13 +294,13 @@ public class MyXMLWriterImpl implements XMLWriter {
     }
 
 
-    public void startDocument(String rootElementName) throws IOException {
+    public void startDocument(String rootElementName) {
         String encodingString = "";
         if (encoding.length() > 0) {
             encodingString = " encoding=\"" + encoding + "\"";
         }
         writer.write("<?xml version=\"1.0\"" + encodingString + "?>\n");
-        if (XMLWriterPreferences.getInstance().isUseNamespaceEntities()) {
+        if (xmlPreferences.isUseNamespaceEntities()) {
             writeEntities(rootElementName);
         }
         preambleWritten = true;
@@ -318,7 +321,7 @@ public class MyXMLWriterImpl implements XMLWriter {
     }
 
 
-    public void endDocument() throws IOException {
+    public void endDocument() {
         // Pop of each element
         while (!elementStack.isEmpty()) {
             writeEndElement();
@@ -327,7 +330,7 @@ public class MyXMLWriterImpl implements XMLWriter {
     }
 
     @Override
-    public void writeStartElement(IRI iri) throws IOException {
+    public void writeStartElement(IRI iri) {
         writeStartElement(iri.toString());
 
     }
@@ -378,7 +381,7 @@ public class MyXMLWriterImpl implements XMLWriter {
         }
 
 
-        public void writeElementStart(boolean close) throws IOException {
+        public void writeElementStart(boolean close) {
             if (!startWritten) {
                 startWritten = true;
                 insertIndentation();
@@ -431,7 +434,7 @@ public class MyXMLWriterImpl implements XMLWriter {
         }
 
 
-        public void writeElementEnd() throws IOException {
+        public void writeElementEnd() {
             if (name != null) {
                 if (!startWritten) {
                     writeElementStart(true);
@@ -448,11 +451,11 @@ public class MyXMLWriterImpl implements XMLWriter {
         }
 
 
-        private void writeAttribute(String attr, String val) throws IOException {
+        private void writeAttribute(String attr, String val) {
             writer.write(attr);
             writer.write('=');
             writer.write('"');
-            if (XMLWriterPreferences.getInstance().isUseNamespaceEntities()) {
+            if (xmlPreferences.isUseNamespaceEntities()) {
                 writer.write(swapForEntity(EscapeUtils.escapeString(val)));
             } else {
                 writer.write(EscapeUtils.escapeString(val));
@@ -461,7 +464,7 @@ public class MyXMLWriterImpl implements XMLWriter {
         }
 
 
-        private void writeAttributes() throws IOException {
+        private void writeAttributes() {
             for (Iterator it = attributes.keySet().iterator(); it.hasNext();) {
                 String attr = (String) it.next();
                 String val = attributes.get(attr);
@@ -477,23 +480,23 @@ public class MyXMLWriterImpl implements XMLWriter {
         }
 
 
-        private void writeTextContent() throws IOException {
+        private void writeTextContent() {
             if (textContent != null) {
                 writer.write(EscapeUtils.escapeString(textContent));
             }
         }
 
 
-        private void insertIndentation() throws IOException {
-            if (XMLWriterPreferences.getInstance().isIndenting()) {
-                for (int i = 0; i < indentation * XMLWriterPreferences.getInstance().getIndentSize(); i++) {
+        private void insertIndentation() {
+            if (xmlPreferences.isIndenting()) {
+                for (int i = 0; i < indentation * xmlPreferences.getIndentSize(); i++) {
                     writer.write(' ');
                 }
             }
         }
 
 
-        private void writeNewLine() throws IOException {
+        private void writeNewLine() {
             writer.write('\n');
         }
     }
