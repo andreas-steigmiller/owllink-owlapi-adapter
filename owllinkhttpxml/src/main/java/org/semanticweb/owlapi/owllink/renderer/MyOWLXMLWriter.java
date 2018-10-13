@@ -1,31 +1,48 @@
 /*
- * Copyright (C) 2010, Ulm University
+ * This file is part of the OWLlink API.
  *
- * Modifications to the initial code base are copyright of their
- * respective authors, or their employers as appropriate.  Authorship
- * of the modifications may be determined from the ChangeLog placed at
- * the end of this file.
+ * The contents of this file are subject to the LGPL License, Version 3.0.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Copyright (C) 2011, derivo GmbH
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/.
+ *
+ *
+ * Alternatively, the contents of this file may be used under the terms of the Apache License, Version 2.0
+ * in which case, the provisions of the Apache License Version 2.0 are applicable instead of those above.
+ *
+ * Copyright 2011, derivo GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.semanticweb.owlapi.owllink.renderer;
 
-import org.coode.xml.XMLWriter;
-import org.coode.xml.XMLWriterFactory;
-import org.coode.xml.XMLWriterNamespaceManager;
+import org.semanticweb.owlapi.owlxml.renderer.OWLXMLWriter;
+import org.semanticweb.owlapi.rdf.rdfxml.renderer.XMLWriter;
+import org.semanticweb.owlapi.rdf.rdfxml.renderer.XMLWriterNamespaceManager;
+import org.semanticweb.owlapi.rdf.rdfxml.renderer.XMLWriterFactory;
 import org.semanticweb.owlapi.io.OWLRendererException;
 import org.semanticweb.owlapi.io.OWLRendererIOException;
 import org.semanticweb.owlapi.model.*;
@@ -46,7 +63,7 @@ import java.util.TreeMap;
  * Author: Olaf Noppens
  * Date: 18.02.2010
  */
-public class MyOWLXMLWriter extends org.coode.owlapi.owlxml.renderer.OWLXMLWriter {
+public class MyOWLXMLWriter extends OWLXMLWriter {
 
     private XMLWriter writer;
 
@@ -71,11 +88,11 @@ public class MyOWLXMLWriter extends org.coode.owlapi.owlxml.renderer.OWLXMLWrite
         if (ontology != null && !ontology.isAnonymous()) {
             base = ontology.getOntologyID().getOntologyIRI().toString();
         }
-        this.writer = XMLWriterFactory.getInstance().createXMLWriter(writer, nsm, base);
+        this.writer = XMLWriterFactory.createXMLWriter(writer, nsm, base);
     }
 
-    public MyOWLXMLWriter(XMLWriter writer, OWLOntology ontology) {
-        super(null, null);
+    public MyOWLXMLWriter(Writer baseWriter, XMLWriter writer, OWLOntology ontology) {
+        super(baseWriter, null);
         this.writer = writer;
     }
 
@@ -95,14 +112,14 @@ public class MyOWLXMLWriter extends org.coode.owlapi.owlxml.renderer.OWLXMLWrite
      * @param iri        The prefix iri
      */
     public void writePrefix(String prefixName, String iri) throws IOException {
-        writer.writeStartElement(OWLXMLVocabulary.PREFIX.getURI().toString());
+        writer.writeStartElement(OWLXMLVocabulary.PREFIX.getIRI());
         if (prefixName.endsWith(":")) {
             String attName = prefixName.substring(0, prefixName.length() - 1);
-            writer.writeAttribute(OWLXMLVocabulary.NAME_ATTRIBUTE.getURI().toString(), attName);
+            writer.writeAttribute(OWLXMLVocabulary.NAME_ATTRIBUTE.getIRI().toString(), attName);
         } else {
-            writer.writeAttribute(OWLXMLVocabulary.NAME_ATTRIBUTE.getURI().toString(), prefixName);
+            writer.writeAttribute(OWLXMLVocabulary.NAME_ATTRIBUTE.getIRI().toString(), prefixName);
         }
-        writer.writeAttribute(OWLXMLVocabulary.IRI_ATTRIBUTE.getURI().toString(), iri);
+        writer.writeAttribute(OWLXMLVocabulary.IRI_ATTRIBUTE.getIRI().toString(), iri);
         writer.writeEndElement();
         iriPrefixMap.put(iri, prefixName);
     }
@@ -130,7 +147,7 @@ public class MyOWLXMLWriter extends org.coode.owlapi.owlxml.renderer.OWLXMLWrite
 
     public void startDocument(OWLOntology ontology) throws OWLRendererException {
         try {
-            writer.startDocument(OWLXMLVocabulary.ONTOLOGY.toString());
+            writer.startDocument(OWLXMLVocabulary.ONTOLOGY.getIRI());
             if (!ontology.isAnonymous()) {
                 writer.writeAttribute(Namespaces.OWL + "ontologyIRI", ontology.getOntologyID().getOntologyIRI().toString());
                 if (ontology.getOntologyID().getVersionIRI() != null) {
@@ -157,7 +174,7 @@ public class MyOWLXMLWriter extends org.coode.owlapi.owlxml.renderer.OWLXMLWrite
 
     public void writeStartElement(OWLXMLVocabulary name) {
         try {
-            writer.writeStartElement(name.getURI().toString());
+            writer.writeStartElement(name.getIRI());
         }
         catch (IOException e) {
             throw new OWLRuntimeException(e);
@@ -182,7 +199,7 @@ public class MyOWLXMLWriter extends org.coode.owlapi.owlxml.renderer.OWLXMLWrite
      */
     public void writeDatatypeAttribute(OWLDatatype datatype) {
         try {
-            writer.writeAttribute(OWLXMLVocabulary.DATATYPE_IRI.getURI().toString(), datatype.getIRI().toString());
+            writer.writeAttribute(OWLXMLVocabulary.DATATYPE_IRI.getIRI().toString(), datatype.getIRI().toString());
         }
         catch (IOException e) {
             throw new OWLRuntimeException(e);
@@ -191,7 +208,7 @@ public class MyOWLXMLWriter extends org.coode.owlapi.owlxml.renderer.OWLXMLWrite
 
     public void writeNodeIDAttribute(NodeID nodeID) {
         try {
-            writer.writeAttribute(OWLXMLVocabulary.NODE_ID.getURI().toString(), nodeID.toString());
+            writer.writeAttribute(OWLXMLVocabulary.NODE_ID.getIRI().toString(), nodeID.toString());
         }
         catch (IOException e) {
             throw new OWLRuntimeException(e);
@@ -200,14 +217,14 @@ public class MyOWLXMLWriter extends org.coode.owlapi.owlxml.renderer.OWLXMLWrite
 
     public void writeIRIAttribute(IRI iri) {
         try {
-            String attName = OWLXMLVocabulary.IRI_ATTRIBUTE.getURI().toString();
+            String attName = OWLXMLVocabulary.IRI_ATTRIBUTE.getIRI().toString();
             String value = iri.toString();
             if (value.startsWith(writer.getXMLBase())) {
                 writer.writeAttribute(attName, value.substring(writer.getXMLBase().length(), value.length()));
             } else {
                 String val = getIRIString(iri.toURI());
                 if (!val.equals(iri.toString())) {
-                    writer.writeAttribute(OWLXMLVocabulary.ABBREVIATED_IRI_ATTRIBUTE.getURI().toString(), val);
+                    writer.writeAttribute(OWLXMLVocabulary.ABBREVIATED_IRI_ATTRIBUTE.getIRI().toString(), val);
                 } else {
                     writer.writeAttribute(attName, val);
                 }
@@ -263,7 +280,7 @@ public class MyOWLXMLWriter extends org.coode.owlapi.owlxml.renderer.OWLXMLWrite
 
     public void writeCardinalityAttribute(int cardinality) {
         try {
-            writer.writeAttribute(OWLXMLVocabulary.CARDINALITY_ATTRIBUTE.getURI().toString(), Integer.toString(cardinality));
+            writer.writeAttribute(OWLXMLVocabulary.CARDINALITY_ATTRIBUTE.getIRI().toString(), Integer.toString(cardinality));
         }
         catch (IOException e) {
             throw new RuntimeException(e);
@@ -283,7 +300,7 @@ public class MyOWLXMLWriter extends org.coode.owlapi.owlxml.renderer.OWLXMLWrite
 
     public void writeFacetAttribute(OWLFacet facet) {
         try {
-            writer.writeAttribute(OWLXMLVocabulary.DATATYPE_FACET.getURI().toString(), facet.getIRI().toString());
+            writer.writeAttribute(OWLXMLVocabulary.DATATYPE_FACET.getIRI().toString(), facet.getIRI().toString());
         }
         catch (IOException e) {
             throw new RuntimeException(e);

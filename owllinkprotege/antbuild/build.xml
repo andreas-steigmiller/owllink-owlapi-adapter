@@ -53,7 +53,7 @@
     <!--
         You have to adjust the protegehomedir. It should link to the protege 4.1 home directory.
     -->
-    <property name="protegehomedir" value="/Applications/Protege_4.1_alpha"/>
+    <property name="protegehomedir" value="${owllink-protege4.basedir}Protege-5.2.0"/>
     <property name="osgilibdir" value="${protegehomedir}/bundles"/>
     <property name="protegecorelibdir" value="${protegehomedir}/bundles"/>
     <property name="pluginsdir" value="${protegehomedir}/plugins"/>
@@ -69,8 +69,20 @@
 
     <path id="protege.core.libs">
         <filelist dir="${protegecorelibdir}">
+        	<file name="protege-common.jar"/>
+        	<file name="protege-editor-core.jar"/>
+        	<file name="protege-editor-owl.jar"/>
             <file name="org.protege.common.jar"/>
             <file name="org.protege.editor.core.application.jar"/>
+            <file name="owlapi-osgidistribution.jar"/>       
+        	<file name="guava.jar"/>
+        	<file name="guice.jar"/>
+        	<file name="guice-assistedinject.jar"/>
+        	<file name="guice-multibindings.jar"/>
+        	<file name="jsr305.jar"/>
+        	<file name="guice-multibindings.jar"/>
+	<file name="org.apache.servicemix.bundles.aopalliance.jar"/>
+	<file name="org.apache.servicemix.bundles.javax-inject.jar"/>
         </filelist>
     </path>
 
@@ -78,7 +90,16 @@
         <filelist dir="${pluginsdir}">
             <file name="org.protege.editor.owl.jar"/>
             <file name="org.semanticweb.owl.owlapi.jar"/>
-        </filelist>
+            <file name="owlapi-osgidistribution.jar"/>
+        	<file name="guava.jar"/>
+        	<file name="guice.jar"/>
+        	<file name="guice-assistedinject.jar"/>
+        	<file name="guice-multibindings.jar"/>
+        	<file name="jsr305.jar"/>
+        	<file name="guice-multibindings.jar"/>
+	<file name="org.apache.servicemix.bundles.aopalliance.jar"/>
+	<file name="org.apache.servicemix.bundles.javax-inject.jar"/>
+		</filelist>
     </path>
 
 
@@ -103,6 +124,10 @@
          the build directory -->
     <target name="compile-plugin">
         <echo>ant.java.version = ${ant.java.version}</echo>
+        <echo>owllinkprotegelibdir = ${owllink-protege4.libdir}</echo>
+        <echo>protegehome = ${protegehomedir}</echo>
+        <echo>protegecorelibdir = ${protegecorelibdir}</echo>        
+        	<echo>classpath = ${toString:owllink-protege4.classpath}</echo>
         <mkdir dir="${owllink-protege4.classesdir}"/>
         <javac srcdir="${owllink-protege4.sourcepath}" destdir="${owllink-protege4.classesdir}" debug="on" target="1.5">
             <classpath refid="owllink-protege4.classpath"/>

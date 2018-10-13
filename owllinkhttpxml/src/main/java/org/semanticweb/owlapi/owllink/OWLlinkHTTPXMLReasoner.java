@@ -1,24 +1,40 @@
 /*
- * Copyright (C) 2010, Ulm University
+ * This file is part of the OWLlink API.
  *
- * Modifications to the initial code base are copyright of their
- * respective authors, or their employers as appropriate.  Authorship
- * of the modifications may be determined from the ChangeLog placed at
- * the end of this file.
+ * The contents of this file are subject to the LGPL License, Version 3.0.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Copyright (C) 2011, derivo GmbH
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/.
+ *
+ *
+ * Alternatively, the contents of this file may be used under the terms of the Apache License, Version 2.0
+ * in which case, the provisions of the Apache License Version 2.0 are applicable instead of those above.
+ *
+ * Copyright 2011, derivo GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.semanticweb.owlapi.owllink;
@@ -199,13 +215,9 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
         return result;
     }
 
-    public NodeSet<OWLClass> getDisjointClasses(OWLClassExpression ce, boolean direct) {
-        if (!direct) {
-            GetDisjointClasses query = new GetDisjointClasses(defaultKnowledgeBase, ce);
-            return performRequestOWLAPI(query);
-        } else {
-            throw new OWLlinkSemanticErrorResponseException("getDisjointClasses (direct) is not supported");
-        }
+    public NodeSet<OWLClass> getDisjointClasses(OWLClassExpression ce) {
+        GetDisjointClasses query = new GetDisjointClasses(defaultKnowledgeBase, ce);
+        return performRequestOWLAPI(query);
     }
 
     public Node<OWLClass> getEquivalentClasses(OWLClassExpression ce) throws InconsistentOntologyException, ClassExpressionNotInProfileException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
@@ -221,17 +233,17 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
         return getEquivalentClasses(getOWLDataFactory().getOWLNothing());
     }
 
-    public NodeSet<OWLObjectProperty> getSubObjectProperties(OWLObjectPropertyExpression pe, boolean direct) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
+    public NodeSet<OWLObjectPropertyExpression> getSubObjectProperties(OWLObjectPropertyExpression pe, boolean direct) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         GetSubObjectProperties query = new GetSubObjectProperties(defaultKnowledgeBase, pe, direct);
-        return performRequestOWLAPI(query);
+        return performRequestOWLAPI(query).asOWLObjectPropertyNodeSet();
     }
 
-    public NodeSet<OWLObjectProperty> getSuperObjectProperties(OWLObjectPropertyExpression pe, boolean direct) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
+    public NodeSet<OWLObjectPropertyExpression> getSuperObjectProperties(OWLObjectPropertyExpression pe, boolean direct) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         GetSuperObjectProperties query = new GetSuperObjectProperties(defaultKnowledgeBase, pe, direct);
-        return performRequestOWLAPI(query);
+        return performRequestOWLAPI(query).asOWLObjectPropertyNodeSet();
     }
 
-    public Node<OWLObjectProperty> getEquivalentObjectProperties(OWLObjectPropertyExpression pe) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
+    public Node<OWLObjectPropertyExpression> getEquivalentObjectProperties(OWLObjectPropertyExpression pe) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         GetEquivalentObjectProperties query = new GetEquivalentObjectProperties(defaultKnowledgeBase, pe);
         OWLObjectPropertyNode node = new OWLObjectPropertyNode();
         for (OWLObjectProperty prop : performRequestOWLAPI(query)) {
@@ -240,7 +252,7 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
         return node;
     }
 
-    public Node<OWLObjectProperty> getTopObjectPropertyNode() {
+    public Node<OWLObjectPropertyExpression> getTopObjectPropertyNode() {
         final GetEquivalentObjectProperties query = new GetEquivalentObjectProperties(defaultKnowledgeBase, getOWLDataFactory().getOWLTopObjectProperty());
         final SetOfObjectProperties classes = performRequest(query);
         final OWLObjectPropertyNode node = new OWLObjectPropertyNode();
@@ -250,7 +262,7 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
         return node;
     }
 
-    public Node<OWLObjectProperty> getBottomObjectPropertyNode() {
+    public Node<OWLObjectPropertyExpression> getBottomObjectPropertyNode() {
         final GetEquivalentObjectProperties query = new GetEquivalentObjectProperties(defaultKnowledgeBase, getOWLDataFactory().getOWLBottomObjectProperty());
         final SetOfObjectProperties classes = performRequest(query);
         final OWLObjectPropertyNode node = new OWLObjectPropertyNode();
@@ -260,15 +272,12 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
         return node;
     }
 
-    public NodeSet<OWLObjectProperty> getDisjointObjectProperties(OWLObjectPropertyExpression pe, boolean direct) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
-        if (!direct) {
-            GetDisjointObjectProperties properties = new GetDisjointObjectProperties(defaultKnowledgeBase, pe);
-            return performRequestOWLAPI(properties);
-        }
-        throw new OWLlinkSemanticErrorResponseException("getDisjointObjectProperties (direct) is not supported");
+    public NodeSet<OWLObjectPropertyExpression> getDisjointObjectProperties(OWLObjectPropertyExpression pe) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
+        GetDisjointObjectProperties properties = new GetDisjointObjectProperties(defaultKnowledgeBase, pe);
+        return performRequestOWLAPI(properties).asOWLObjectPropertyNodeSet();
     }
 
-    public Node<OWLObjectProperty> getInverseObjectProperties(OWLObjectPropertyExpression pe) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
+    public Node<OWLObjectPropertyExpression> getInverseObjectProperties(OWLObjectPropertyExpression pe) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         final OWLObjectPropertyExpression inverse = pe.getInverseProperty();
         return getEquivalentObjectProperties(inverse);
     }
@@ -317,12 +326,9 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
         return performRequestOWLAPI(query);
     }
 
-    public NodeSet<OWLDataProperty> getDisjointDataProperties(OWLDataPropertyExpression pe, boolean direct) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
+    public NodeSet<OWLDataProperty> getDisjointDataProperties(OWLDataPropertyExpression pe) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
         GetDisjointDataProperties query = new GetDisjointDataProperties(defaultKnowledgeBase, pe);
-        if (!direct)
-            return performRequestOWLAPI(query);
-        else
-            throw new OWLlinkSemanticErrorResponseException("getDisjointDataProperties (direct) is not supported");
+        return performRequestOWLAPI(query);
     }
 
     public NodeSet<OWLClass> getDataPropertyDomains(OWLDataProperty pe, boolean direct) throws InconsistentOntologyException, FreshEntitiesException, ReasonerInterruptedException, TimeOutException {
@@ -420,26 +426,31 @@ public class OWLlinkHTTPXMLReasoner extends OWLReasonerBase implements OWLlinkRe
 
     }
 
-    public void prepareReasoner() throws ReasonerInterruptedException, TimeOutException {
-        try {
-            classify();
-        } catch (OWLReasonerException e) {
-            e.printStackTrace();
-        }
-        try {
-            realise();
-        } catch (OWLReasonerException e) {
-            e.printStackTrace();
-        }
+    public void precomputeInferences(InferenceType... inferenceTypes) throws ReasonerInterruptedException, TimeOutException, InconsistentOntologyException {
+        for (InferenceType type : inferenceTypes)
+            if (InferenceType.CLASS_ASSERTIONS == type)
+                realise();
+            else if (InferenceType.CLASS_HIERARCHY == type)
+                classify();
     }
 
+    public boolean isPrecomputed(InferenceType inferenceType) {
+        throw new OWLlinkUnsupportedMethodException();
+    }
 
-    public void classify() throws OWLReasonerException {
+    public Set<InferenceType> getPrecomputableInferenceTypes() {
+        Set<InferenceType> types = new HashSet<InferenceType>();
+        types.add(InferenceType.CLASS_HIERARCHY);
+        types.add(InferenceType.CLASS_ASSERTIONS);
+        return types;
+    }
+
+    public void classify() {
         Classify classify = new Classify(defaultKnowledgeBase);
         performRequestOWLAPI(classify);
     }
 
-    public void realise() throws OWLReasonerException {
+    public void realise() {
         Realize realize = new Realize(defaultKnowledgeBase);
         performRequestOWLAPI(realize);
     }

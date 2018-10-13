@@ -1,30 +1,47 @@
 /*
- * Copyright (C) 2010, Ulm University
+ * This file is part of the OWLlink API.
  *
- * Modifications to the initial code base are copyright of their
- * respective authors, or their employers as appropriate.  Authorship
- * of the modifications may be determined from the ChangeLog placed at
- * the end of this file.
+ * The contents of this file are subject to the LGPL License, Version 3.0.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Copyright (C) 2011, derivo GmbH
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/.
+ *
+ *
+ * Alternatively, the contents of this file may be used under the terms of the Apache License, Version 2.0
+ * in which case, the provisions of the Apache License Version 2.0 are applicable instead of those above.
+ *
+ * Copyright 2011, derivo GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.semanticweb.owlapi.owllink;
 
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.owllink.builtin.requests.GetSubObjectProperties;
 import org.semanticweb.owlapi.owllink.builtin.requests.GetSubObjectPropertyHierarchy;
 import org.semanticweb.owlapi.owllink.builtin.requests.GetSuperObjectProperties;
@@ -104,14 +121,14 @@ public class OWLlinkSubObjectPropertiesTestCase extends AbstractOWLlinkAxiomsTes
 
     public void testGetSubObjectPropertiesViaOWLReasoner() throws Exception {
         //indirect case
-        NodeSet<OWLObjectProperty> response = super.reasoner.getSubObjectProperties(getOWLObjectProperty("B"), false);
+        NodeSet<OWLObjectPropertyExpression> response = super.reasoner.getSubObjectProperties(getOWLObjectProperty("B"), false);
 
         assertTrue(response.getNodes().size() == 2);
-        Node<OWLObjectProperty> synset = response.iterator().next();
+        Node<OWLObjectPropertyExpression> synset = response.iterator().next();
         assertTrue(synset.getSize() == 1);
         assertTrue(synset.contains(getOWLObjectProperty("A")));
 
-        Set<OWLObjectProperty> flattenedClasses = response.getFlattened();
+        Set<OWLObjectPropertyExpression> flattenedClasses = response.getFlattened();
         assertTrue(flattenedClasses.size() == 2);
         assertTrue(flattenedClasses.contains(getOWLObjectProperty("A")));
         assertTrue(flattenedClasses.contains(manager.getOWLDataFactory().getOWLBottomObjectProperty()));
@@ -128,7 +145,7 @@ public class OWLlinkSubObjectPropertiesTestCase extends AbstractOWLlinkAxiomsTes
 
     public void testGetDirectSubObjectPropertiesViaOWLReasoner() throws Exception {
         //direct case
-        NodeSet<OWLObjectProperty> response = super.reasoner.getSubObjectProperties(getOWLObjectProperty("B"), true);
+        NodeSet<OWLObjectPropertyExpression> response = super.reasoner.getSubObjectProperties(getOWLObjectProperty("B"), true);
         assertTrue(response.getNodes().size() == 1);
         assertTrue(response.getFlattened().size() == 1);
         assertTrue(response.getFlattened().contains(getOWLObjectProperty("A")));
@@ -139,7 +156,7 @@ public class OWLlinkSubObjectPropertiesTestCase extends AbstractOWLlinkAxiomsTes
         GetSuperObjectProperties query = new GetSuperObjectProperties(getKBIRI(), getOWLObjectProperty("A"));
         SetOfObjectPropertySynsets response = super.reasoner.answer(query);
         assertTrue(response.getNodes().size() == 3);
-        Node<OWLObjectProperty> synset = new OWLObjectPropertyNode(getOWLObjectProperty("B"));
+        Node<OWLObjectPropertyExpression> synset = new OWLObjectPropertyNode(getOWLObjectProperty("B"));
         assertTrue(response.getNodes().contains(synset));
         synset = new OWLObjectPropertyNode(getOWLObjectProperty("C"));
         assertTrue(response.getNodes().contains(synset));
@@ -148,9 +165,9 @@ public class OWLlinkSubObjectPropertiesTestCase extends AbstractOWLlinkAxiomsTes
     }
 
     public void testGetSuperPropertiesViaOWLReasoner() throws Exception {
-        NodeSet<OWLObjectProperty> response = super.reasoner.getSuperObjectProperties(getOWLObjectProperty("A"), false);
+        NodeSet<OWLObjectPropertyExpression> response = super.reasoner.getSuperObjectProperties(getOWLObjectProperty("A"), false);
         assertTrue(response.getNodes().size() == 3);
-        Node<OWLObjectProperty> synset = new OWLObjectPropertyNode(getOWLObjectProperty("B"));
+        Node<OWLObjectPropertyExpression> synset = new OWLObjectPropertyNode(getOWLObjectProperty("B"));
         assertTrue(response.getNodes().contains(synset));
         synset = new OWLObjectPropertyNode(getOWLObjectProperty("C"));
         assertTrue(response.getNodes().contains(synset));
@@ -165,35 +182,35 @@ public class OWLlinkSubObjectPropertiesTestCase extends AbstractOWLlinkAxiomsTes
     }
 
     public void testGetSuperPropertiesDirectViaOWLReasoner() throws Exception {
-        NodeSet<OWLObjectProperty> response = super.reasoner.getSuperObjectProperties(getOWLObjectProperty("A"), true);
+        NodeSet<OWLObjectPropertyExpression> response = super.reasoner.getSuperObjectProperties(getOWLObjectProperty("A"), true);
         assertTrue(response.getNodes().size() == 1);
     }
 
     public void testSubPropertyHierarchy() throws Exception {
         GetSubObjectPropertyHierarchy query = new GetSubObjectPropertyHierarchy(getKBIRI());
-        Hierarchy<OWLObjectProperty> response = super.reasoner.answer(query);
+        ObjectPropertyHierarchy response = super.reasoner.answer(query);
         Set<HierarchyPair<OWLObjectProperty>> pairs = response.getPairs();
         assertFalse(pairs.isEmpty());
         assertTrue(pairs.size() == 3);
 
         Set<HierarchyPair<OWLObjectProperty>> expectedSet = CollectionFactory.createSet();
-        Node<OWLObjectProperty> synset = new OWLObjectPropertyNode(getDataFactory().getOWLTopObjectProperty());
+        Node<OWLObjectProperty> synset = new OWLlinkOWLObjectPropertyNode(getDataFactory().getOWLTopObjectProperty());
         Set<Node<OWLObjectProperty>> set = CollectionFactory.createSet();
-        set.add(new OWLObjectPropertyNode(getOWLObjectProperty("C")));
+        set.add(new OWLlinkOWLObjectPropertyNode(getOWLObjectProperty("C")));
         SubEntitySynsets<OWLObjectProperty> setOfSynsets = new SubObjectPropertySynsets(set);
         expectedSet.add(new HierarchyPairImpl<OWLObjectProperty>(synset, setOfSynsets));
 
-        synset = new OWLObjectPropertyNode(getOWLObjectProperty("C"));
+        synset = new OWLlinkOWLObjectPropertyNode(getOWLObjectProperty("C"));
         set = CollectionFactory.createSet();
-        set.add(new OWLObjectPropertyNode(getOWLObjectProperty("B")));
-        set.add(new OWLObjectPropertyNode(getOWLObjectProperty("D")));
+        set.add(new OWLlinkOWLObjectPropertyNode(getOWLObjectProperty("B")));
+        set.add(new OWLlinkOWLObjectPropertyNode(getOWLObjectProperty("D")));
 
         setOfSynsets = new SubObjectPropertySynsets(set);
         expectedSet.add(new HierarchyPairImpl<OWLObjectProperty>(synset, setOfSynsets));
 
-        synset = new OWLObjectPropertyNode(getOWLObjectProperty("B"));
+        synset = new OWLlinkOWLObjectPropertyNode(getOWLObjectProperty("B"));
         set = CollectionFactory.createSet();
-        set.add(new OWLObjectPropertyNode(getOWLObjectProperty("A")));
+        set.add(new OWLlinkOWLObjectPropertyNode(getOWLObjectProperty("A")));
         setOfSynsets = new SubObjectPropertySynsets(set);
         expectedSet.add(new HierarchyPairImpl<OWLObjectProperty>(synset, setOfSynsets));
 

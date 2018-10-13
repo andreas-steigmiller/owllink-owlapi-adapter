@@ -1,34 +1,45 @@
 /*
- * Copyright (C) 2010, Ulm University
+ * This file is part of the OWLlink API.
  *
- * Modifications to the initial code base are copyright of their
- * respective authors, or their employers as appropriate.  Authorship
- * of the modifications may be determined from the ChangeLog placed at
- * the end of this file.
+ * The contents of this file are subject to the LGPL License, Version 3.0.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Copyright (C) 2011, derivo GmbH
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/.
+ *
+ *
+ * Alternatively, the contents of this file may be used under the terms of the Apache License, Version 2.0
+ * in which case, the provisions of the Apache License Version 2.0 are applicable instead of those above.
+ *
+ * Copyright 2011, derivo GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.semanticweb.owlapi.owllink.parser;
 
-import org.coode.owlapi.owlxmlparser.OWLElementHandler;
-import org.coode.owlapi.owlxmlparser.OWLElementHandlerFactory;
-import org.coode.owlapi.owlxmlparser.OWLXMLParserHandler;
-import org.semanticweb.owlapi.model.OWLException;
 import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.owllink.OWLlinkXMLVocabulary;
 import org.semanticweb.owlapi.owllink.PrefixManagerProvider;
 import org.semanticweb.owlapi.owllink.Request;
@@ -46,19 +57,19 @@ import java.util.Map;
  * <p/>
  * Here we also handle the prefix name mapping for abbreviated IRIs.
  */
-public class OWLlinkXMLParserHandler extends MyOWLXMLParserHandler {
+public class OWLlinkXMLParserHandler extends OWLXMLParserHandler {
 
     protected Map<String, OWLlinkElementHandlerFactory> owllinkHandlerMap;
     protected OWLlinkResponseMessageElementHandler responseMessageHandler = new OWLlinkResponseMessageElementHandler(this);
     protected PrefixManagerProvider prov;
     Request[] requests;
 
-    public OWLlinkXMLParserHandler(OWLOntologyManager owlOntologyManager, PrefixManagerProvider prov, Request[] requests, OWLOntology ontology) {
-        this(owlOntologyManager, prov, requests, ontology, null);
+    public OWLlinkXMLParserHandler(OWLOntology ontology, PrefixManagerProvider prov, Request[] requests) {
+        this(ontology, prov, requests, null);
     }
 
-    public OWLlinkXMLParserHandler(OWLOntologyManager owlOntologyManager, PrefixManagerProvider provider, Request[] requests, OWLOntology ontology, OWLElementHandler topHandler) {
-        super(owlOntologyManager, ontology, topHandler);
+    public OWLlinkXMLParserHandler(OWLOntology ontology, PrefixManagerProvider provider, Request[] requests, OWLElementHandler topHandler) {
+        super(ontology, topHandler);
         this.owllinkHandlerMap = new HashMap<String, OWLlinkElementHandlerFactory>();
         this.prov = provider;
         this.requests = requests;
@@ -436,30 +447,29 @@ public class OWLlinkXMLParserHandler extends MyOWLXMLParserHandler {
         return this.requests[index];
     }
 
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        try {
-            processXMLBase(attributes);
-            if (Namespaces.OWL2.toString().equals(uri) || Namespaces.OWL.toString().equals(uri) || Namespaces.OWL11XML.toString().equals(uri)) {
-                super.startElement(uri, localName, qName, attributes);
-            } else {
-                OWLElementHandlerFactory handlerFactory = owllinkHandlerMap.get(localName);
-                if (handlerFactory != null) {
-                    OWLElementHandler handler = handlerFactory.createHandler(this);
-                    if (!handlerStack.isEmpty()) {
-                        OWLElementHandler topElement = handlerStack.get(0);
+    public void startElement(String uri, String localName, String qName, Attributes attributes) {
+        processXMLBase(attributes);
+        if (Namespaces.OWL2.toString().equals(uri) || Namespaces.OWL.toString().equals(uri) || Namespaces.OWL11XML.toString().equals(uri)) {
+            super.startElement(uri, localName, qName, attributes);
+        } else {
+            OWLlinkElementHandlerFactory handlerFactory = owllinkHandlerMap.get(localName);
+            if (handlerFactory != null) {
+                OWLElementHandler handler = handlerFactory.createHandler(this);
+                if (!handlerStack.isEmpty()) {
+                    OWLElementHandler topElement = handlerStack.get(0);
+                    if (topElement != null) {
                         handler.setParentHandler(topElement);
                     }
-                    handlerStack.add(0, handler);
-                    handler.startElement(localName);
-
-                    for (int i = 0; i < attributes.getLength(); i++) {
-                        handler.attribute(attributes.getLocalName(i), attributes.getValue(i));
-                    }
                 }
+                handlerStack.add(0, handler);
+                handler.startElement(localName);
+
+                for (int i = 0; i < attributes.getLength(); i++) {
+                    handler.attribute(attributes.getLocalName(i), attributes.getValue(i));
+                }
+            } else {
+                handlerStack.add(0, null);
             }
-        }
-        catch (OWLException e) {
-            throw new SAXException(e.getMessage() + "(Current element " + localName + ")", e);
         }
     }
 

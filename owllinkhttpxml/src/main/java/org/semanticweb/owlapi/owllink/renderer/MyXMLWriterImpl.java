@@ -1,33 +1,51 @@
 /*
- * Copyright (C) 2010, Ulm University
+ * This file is part of the OWLlink API.
  *
- * Modifications to the initial code base are copyright of their
- * respective authors, or their employers as appropriate.  Authorship
- * of the modifications may be determined from the ChangeLog placed at
- * the end of this file.
+ * The contents of this file are subject to the LGPL License, Version 3.0.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Copyright (C) 2011, derivo GmbH
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/.
+ *
+ *
+ * Alternatively, the contents of this file may be used under the terms of the Apache License, Version 2.0
+ * in which case, the provisions of the Apache License Version 2.0 are applicable instead of those above.
+ *
+ * Copyright 2011, derivo GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.semanticweb.owlapi.owllink.renderer;
 
-import org.coode.string.EscapeUtils;
-import org.coode.xml.IllegalElementNameException;
-import org.coode.xml.XMLWriter;
-import org.coode.xml.XMLWriterNamespaceManager;
-import org.coode.xml.XMLWriterPreferences;
+
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.rdf.rdfxml.renderer.IllegalElementNameException;
+import org.semanticweb.owlapi.rdf.rdfxml.renderer.XMLWriter;
+import org.semanticweb.owlapi.rdf.rdfxml.renderer.XMLWriterNamespaceManager;
+import org.semanticweb.owlapi.rdf.rdfxml.renderer.XMLWriterPreferences;
+import org.semanticweb.owlapi.util.EscapeUtils;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import java.io.IOException;
@@ -80,7 +98,11 @@ public class MyXMLWriterImpl implements XMLWriter {
 
 
     private void setupEntities() {
-        List<String> namespaces = new ArrayList<String>(xmlWriterNamespaceManager.getNamespaces());
+        List<String> namespaces = new ArrayList<String>();
+        Iterator<String> namespacesIt = xmlWriterNamespaceManager.getNamespaces().iterator();
+        while (namespacesIt.hasNext()) {
+            namespaces.add(namespacesIt.next());
+        }
         Collections.sort(namespaces, new Comparator<String>() {
             public int compare(String o1, String o2) {
                 // Shortest string first
@@ -164,6 +186,11 @@ public class MyXMLWriterImpl implements XMLWriter {
         }
     }
 
+    @Override
+    public void startDocument(IRI iri) throws IOException {
+        startDocument(iri.toString());
+    }
+
 
     public void writeStartElement(String name) throws IOException {
         String qName = xmlWriterNamespaceManager.getQName(name);
@@ -218,6 +245,11 @@ public class MyXMLWriterImpl implements XMLWriter {
         element.setAttribute(xmlWriterNamespaceManager.getQName(attr), val);
     }
 
+    @Override
+    public void writeAttribute(IRI iri, String s) throws IOException {
+        writeAttribute(iri.toString(), s);
+    }
+
 
     public void writeTextContent(String text) {
         XMLElement element = elementStack.peek();
@@ -250,7 +282,7 @@ public class MyXMLWriterImpl implements XMLWriter {
             writer.write("    <!ENTITY ");
             writer.write(entity);
             writer.write(" \"");
-            entityVal = EscapeUtils.escapeXML(entityVal);
+            entityVal = EscapeUtils.escapeString(entityVal);
             entityVal = entityVal.replace("%", PERCENT_ENTITY);
             writer.write(entityVal);
             writer.write("\" >\n");
@@ -292,6 +324,12 @@ public class MyXMLWriterImpl implements XMLWriter {
             writeEndElement();
         }
         writer.flush();
+    }
+
+    @Override
+    public void writeStartElement(IRI iri) throws IOException {
+        writeStartElement(iri.toString());
+
     }
 
 
@@ -415,9 +453,9 @@ public class MyXMLWriterImpl implements XMLWriter {
             writer.write('=');
             writer.write('"');
             if (XMLWriterPreferences.getInstance().isUseNamespaceEntities()) {
-                writer.write(swapForEntity(EscapeUtils.escapeXML(val)));
+                writer.write(swapForEntity(EscapeUtils.escapeString(val)));
             } else {
-                writer.write(EscapeUtils.escapeXML(val));
+                writer.write(EscapeUtils.escapeString(val));
             }
             writer.write('"');
         }
@@ -441,7 +479,7 @@ public class MyXMLWriterImpl implements XMLWriter {
 
         private void writeTextContent() throws IOException {
             if (textContent != null) {
-                writer.write(EscapeUtils.escapeXML(textContent));
+                writer.write(EscapeUtils.escapeString(textContent));
             }
         }
 
