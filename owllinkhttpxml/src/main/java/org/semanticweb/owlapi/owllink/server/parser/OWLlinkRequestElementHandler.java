@@ -40,15 +40,20 @@
 package org.semanticweb.owlapi.owllink.server.parser;
 
 import org.semanticweb.owlapi.owllink.Request;
+import org.semanticweb.owlapi.owllink.parser.OWLXMLParserException;
 import org.semanticweb.owlapi.owllink.parser.OWLXMLParserHandler;
 
 /**
  * Author: Olaf Noppens
  * Date: 25.10.2009
  */
-public abstract class OWLlinkRequestElementHandler<R extends Request> extends OWLlinkElementHandler<R> {
+public abstract class OWLlinkRequestElementHandler<R extends Request> extends AbstractOWLlinkRequestElementHandler<R> {
 
     public OWLlinkRequestElementHandler(OWLXMLParserHandler handler) {
         super(handler);
+    }
+    
+    public void endElement() throws OWLXMLParserException {
+        getParentHandler().handleChild(this);
     }
 }

@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+
+OWLlink API 1.1 (November 10, 2010)
+----------------------------------
+
+* UPDATED: OWL API 3.1 support (OWLAPI 3.0 is no longer supported)
+
+* UPDATED: Protege 4.1 support
+
 OWLlink API 1.0.1 (May 19, 2010)
 ------------------------------
 

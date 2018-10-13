@@ -51,7 +51,7 @@ import org.semanticweb.owlapi.owllink.parser.OWLXMLParserHandler;
  * Author: Olaf Noppens
  * Date: 25.10.2009
  */
-public abstract class AbstractOWLlinkKBRequestElementHandler<R extends KBRequest> extends AbstractOWLlinkElementHandler<R> {
+public abstract class AbstractOWLlinkKBRequestElementHandler<R extends KBRequest> extends OWLlinkRequestElementHandler<R> {
     IRI kb;
     OWLlinkXMLRequestParserHandler handler;
 

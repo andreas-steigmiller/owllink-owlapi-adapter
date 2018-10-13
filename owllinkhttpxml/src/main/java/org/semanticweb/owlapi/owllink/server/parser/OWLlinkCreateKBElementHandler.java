@@ -53,7 +53,7 @@ import java.util.Set;
  * Author: Olaf Noppens
  * Date: 25.10.2009
  */
-public class OWLlinkCreateKBElementHandler extends AbstractOWLlinkRequestElementHandler<CreateKB> {
+public class OWLlinkCreateKBElementHandler extends OWLlinkRequestElementHandler<CreateKB> {
     protected IRI kb;
     protected String name;
     protected Set<OWLlinkPrefixElementHandler.Prefix> prefixes;

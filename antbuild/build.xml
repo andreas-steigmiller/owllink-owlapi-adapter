@@ -23,7 +23,7 @@
 
 <project name="owllink" default="distribution">
 
-    <property name="version" value="1.0.2"/>
+    <property name="version" value="1.4.0-alpha"/>
 
     <!-- The directory that contains the jar file dependencies for
          the class path and building a release -->
@@ -70,9 +70,17 @@
             <!--    <include name="*.jar"/>-->
             <file name="org.mortbay.jetty.jar"/>
             <file name="org.mortbay.jmx.jar"/>
-            <file name="owlapi-bin.jar"/>
-            <file name="owlapi-bin-2.jar"/>
-        </filelist>
+            
+        	<file name="owlapi-distribution-4.5.0-jar-with-dependencies.jar"/>
+        	<file name="guava.jar"/>
+        	<file name="guice.jar"/>
+        	<file name="guice-assistedinject.jar"/>
+        	<file name="guice-multibindings.jar"/>
+        	<file name="jsr305.jar"/>
+        	<file name="org.apache.servicemix.bundles.javax-inject.jar"/>
+        	<file name="org.apache.servicemix.bundles.aopalliance.jar"/>
+        	<file name="org.semanticweb.hermit-1.4.0.0-SNAPSHOT.jar"/>
+       </filelist>
     </path>
 
 
@@ -81,12 +89,12 @@
         <delete dir="${builddir}"/>
     </target>
 
-    <!-- Compiles the source into a directory called classes inside
+    <!-- Compiles the sources into a directory called classes inside
          the build directory -->
     <target name="compile">
         <echo>ant.java.version = ${ant.java.version}</echo>
         <mkdir dir="${classesdir}"/>
-        <javac srcdir="./.." destdir="${classesdir}" debug="on" target="1.5">
+        <javac srcdir="./.." destdir="${classesdir}" debug="on" target="1.8">
             <classpath refid="classpath"/>
             <include name="owllinkapi/${sourcepath}"/>
             <include name="owllinkhttpxml/${sourcepath}"/>
@@ -108,7 +116,7 @@
     <!-- We just include the documentation for non-implementation stuff
          - including documentation for the impl package wouldn't make sense
          because end API users aren't expected to deal with this kind of thing -->
-    <target name="javadoc">
+	<!-- <target name="javadoc">
         <mkdir dir="${javadocdir}"/>
         <javadoc destdir="${javadocdir}" verbose="no" windowtitle="The OWLlink API">
             <fileset dir="./.." defaultexcludes="yes">
@@ -119,7 +127,7 @@
         <zip destfile="${builddir}/${javadoc-name}">
             <fileset dir="${javadocdir}"/>
         </zip>
-    </target>
+    </target> -->
 
     <!-- Creates a jar containing the OWLlink API source code -->
     <target name="srcjar">
@@ -138,7 +146,7 @@
          class files, a jar file containing the source, a lib directory containing
          the dependencies for the distribution.  The zip file is names
          owllinkapi-${version}.zip -->
-    <target name="distribution" depends="clean, binjar, srcjar, javadoc, protegeplugin">
+    <target name="distribution" depends="clean, binjar, srcjar, protegeplugin">
         <mkdir dir="${distdir}"/>
         <copy todir="${distdir}/lib">
             <fileset dir="${libdir}"/>
@@ -153,7 +161,6 @@
             <fileset file="build.xml"/>
             <fileset file="readme.txt"/>
             <fileset file="releasenotes.txt"/>
-            <fileset file="changes.txt"/>
             <fileset file="license.txt"/>
             <fileset file="${src-name}"/>
         </copy>
